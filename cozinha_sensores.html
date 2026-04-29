@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozinha Inteligente — Painel IoT</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"] {
+  --bg:#0d1117; --panel:#161b22; --card:#1c2230; --border:#2a3245;
+  --text-main:#e6edf3; --text-dim:#8b949e;
+  --header-bg:linear-gradient(135deg,#0d1117 0%,#161b22 100%);
+  --tab-bg:#0f1420; --tab-active:#1c2230; --tab-hover:#161e2e;
+  --kitchen-bg:linear-gradient(180deg,#1a2035 0%,#0d1117 100%);
+  --svg-wall:#1a2035; --svg-floor:#141a2a;
+  --svg-cabinet:#1a2535; --svg-cab-str:#2a3a52;
+  --svg-dark:#0d1420; --svg-darker:#0a1018; --svg-handle:#3a5070;
+  --svg-stove:#111825; --input-bg:#1c2230; --scrollbar:#2a3245;
+  --stat-bg:#1c2230;
+}
+[data-theme="light"] {
+  --bg:#f0f2f7; --panel:#ffffff; --card:#f7f8fc; --border:#dde1ec;
+  --text-main:#1a1f2e; --text-dim:#6b7280;
+  --header-bg:linear-gradient(135deg,#1a1f2e 0%,#252d3e 100%);
+  --tab-bg:#e8eaf2; --tab-active:#ffffff; --tab-hover:#f0f2f8;
+  --kitchen-bg:linear-gradient(180deg,#d0daf2 0%,#b8c8e8 100%);
+  --svg-wall:#c0cce0; --svg-floor:#a8b8d0;
+  --svg-cabinet:#d0dce8; --svg-cab-str:#8899b4;
+  --svg-dark:#b0c0d4; --svg-darker:#a0b0c8; --svg-handle:#607090;
+  --svg-stove:#7888a0; --input-bg:#ffffff; --scrollbar:#dde1ec;
+  --stat-bg:#ffffff;
+}
+:root {
+  --accent-yellow:#f4c842; --accent-orange:#ff6b35;
+  --accent-cyan:#00c4ef;   --accent-green:#2ecc40;
+  --accent-red:#ff2d55;    --accent-blue:#4d8fff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:'Exo 2',sans-serif;color:var(--text-main);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s;}
+
+/* HEADER */
+header{background:var(--header-bg);border-bottom:2px solid var(--accent-yellow);padding:12px 26px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px #f4c84218;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{font-size:1.8rem;filter:drop-shadow(0 0 8px var(--accent-yellow));}
+.logo-text h1{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--accent-yellow);letter-spacing:2px;}
+.logo-text p{font-size:0.62rem;color:#8b949e;letter-spacing:4px;text-transform:uppercase;}
+.header-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.status-chip{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:0.7rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#9ca3af;padding:5px 12px;border-radius:20px;}
+[data-theme="light"] .status-chip{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);color:#4b5563;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot.online{background:var(--accent-green);box-shadow:0 0 8px #2ecc4066;animation:blink 2s infinite;}
+.dot.alert{background:var(--accent-red);box-shadow:0 0 10px #ff2d5566;animation:blink .6s infinite;}
+#clock{font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--accent-cyan);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* THEME TOGGLE */
+.theme-toggle{display:flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:3px;gap:2px;}
+[data-theme="light"] .theme-toggle{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);}
+.tbtn{border:none;cursor:pointer;padding:5px 11px;border-radius:20px;font-size:0.72rem;font-family:'Exo 2',sans-serif;font-weight:600;color:#9ca3af;background:transparent;transition:all .22s;letter-spacing:.5px;}
+[data-theme="light"] .tbtn{color:#6b7280;}
+.tbtn.active{background:var(--accent-yellow);color:#0d1117;}
+[data-theme="light"] .tbtn.active{background:#1a1f2e;color:var(--accent-yellow);}
+
+/* TAB NAV */
+.tab-nav{display:flex;background:var(--tab-bg);border-bottom:2px solid var(--border);padding:0 26px;transition:background .3s;}
+.tab-btn{background:transparent;border:none;border-bottom:3px solid transparent;color:var(--text-dim);padding:12px 20px 9px;font-family:'Rajdhani',sans-serif;font-size:.92rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;margin-bottom:-2px;}
+.tab-btn:hover{color:var(--text-main);background:var(--tab-hover);}
+.tab-btn.active{color:var(--accent-yellow);border-bottom-color:var(--accent-yellow);background:var(--tab-active);}
+.tab-badge{background:var(--accent-red);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;font-family:'Share Tech Mono',monospace;display:none;}
+.tab-badge.show{display:inline-block;animation:blink 1s infinite;}
+
+/* TAB CONTENT */
+.tab-content{display:none;animation:fadeIn .25s ease;}
+.tab-content.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGES */
+.page-planta{padding:22px 26px;max-width:1280px;margin:0 auto;}
+.page-sensores{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;padding:22px 26px;max-width:1280px;margin:0 auto;}
+.page-log{padding:22px 26px;max-width:860px;margin:0 auto;}
+
+/* KITCHEN */
+.kitchen-wrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:background .3s,border-color .3s;}
+.kitchen-top-bar{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.kitchen-top-bar h2{font-family:'Rajdhani',sans-serif;font-size:.95rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.live-badge{background:var(--accent-red);color:white;font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:2px;animation:blink 1.5s infinite;}
+.kitchen-svg-area{padding:18px 18px 10px;background:var(--kitchen-bg);position:relative;transition:background .3s;}
+#kitchen-svg{width:100%;height:auto;display:block;}
+
+/* Sensor popup */
+.sensor-popup{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--text-main);pointer-events:none;z-index:50;display:none;min-width:140px;box-shadow:0 8px 24px #0007;transition:background .3s;}
+.sensor-popup.show{display:block;}
+.sp-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:4px;}
+
+/* Legend */
+.kitchen-legend{display:flex;gap:14px;flex-wrap:wrap;padding:9px 18px;border-top:1px solid var(--border);background:var(--tab-bg);transition:background .3s;}
+.leg-item{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--text-dim);}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* Bottom strip */
+.bottom-strip{display:flex;border-top:1px solid var(--border);background:var(--panel);flex-wrap:wrap;transition:background .3s;}
+.bs-cell{flex:1;min-width:100px;padding:9px 14px;border-right:1px solid var(--border);text-align:center;}
+.bs-cell:last-child{border-right:none;}
+.bs-label2{font-size:.58rem;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;font-family:'Share Tech Mono',monospace;}
+.bs-val{font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;}
+
+/* SENSOR CARDS */
+.sensor-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;transition:border-color .3s,box-shadow .3s,background .3s;position:relative;overflow:hidden;}
+.sensor-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+.sensor-card.temp::before{background:var(--accent-orange);}
+.sensor-card.hum::before{background:var(--accent-cyan);}
+.sensor-card.pir::before{background:var(--accent-yellow);}
+.sensor-card.gas::before{background:var(--accent-red);}
+.sensor-card.water::before{background:var(--accent-blue);}
+.sensor-card.alert-state{animation:card-alert .5s ease infinite alternate;}
+@keyframes card-alert{from{border-color:var(--border);box-shadow:none}to{border-color:var(--accent-red);box-shadow:0 0 20px #ff2d5533}}
+.sc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;}
+.sc-title{display:flex;align-items:center;gap:10px;}
+.sc-icon{font-size:1.35rem;}
+.sc-name{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;letter-spacing:1px;}
+.sc-model{font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;}
+.sc-status{font-size:.6rem;padding:3px 8px;border-radius:10px;font-family:'Share Tech Mono',monospace;font-weight:600;letter-spacing:1px;}
+.sc-status.ok{background:#2ecc4020;color:var(--accent-green);border:1px solid #2ecc4044;}
+.sc-status.warn{background:#f4c84220;color:#c9952a;border:1px solid #f4c84244;}
+.sc-status.danger{background:#ff2d5520;color:var(--accent-red);border:1px solid #ff2d5544;}
+[data-theme="light"] .sc-status.ok{background:#d4f7db;color:#1a7a30;border-color:#7dcf90;}
+[data-theme="light"] .sc-status.warn{background:#fff3cd;color:#8a6000;border-color:#f0c040;}
+[data-theme="light"] .sc-status.danger{background:#ffe0e6;color:#b00020;border-color:#f08090;}
+.sc-value-row{display:flex;align-items:flex-end;gap:5px;margin-bottom:9px;}
+.sc-value{font-family:'Rajdhani',sans-serif;font-size:2.6rem;font-weight:700;line-height:1;transition:color .5s;}
+.sc-unit{font-size:.9rem;color:var(--text-dim);margin-bottom:4px;font-family:'Share Tech Mono',monospace;}
+.gauge-wrap{margin-bottom:9px;}
+.gauge-label{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text-dim);margin-bottom:4px;font-family:'Share Tech Mono',monospace;}
+.gauge-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.gauge-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1),background .5s;}
+.mini-chart{width:100%;height:36px;}
+.controls-area{display:flex;gap:7px;align-items:center;margin-top:9px;flex-wrap:wrap;}
+.ctrl-btn{background:var(--panel);border:1px solid var(--border);color:var(--text-main);padding:5px 11px;border-radius:8px;font-size:.7rem;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;letter-spacing:.5px;}
+.ctrl-btn:hover{border-color:var(--accent-cyan);color:var(--accent-cyan);}
+.ctrl-btn.active-btn{background:var(--accent-cyan);color:#0d1117;border-color:var(--accent-cyan);font-weight:700;}
+.ctrl-btn.danger{border-color:var(--accent-red);color:var(--accent-red);}
+.ctrl-btn.danger:hover{background:var(--accent-red);color:white;}
+input[type=range]{flex:1;min-width:70px;accent-color:var(--accent-cyan);cursor:pointer;}
+.pir-ring{width:24px;height:24px;border-radius:50%;border:2px solid var(--accent-yellow);display:inline-block;transition:box-shadow .3s;}
+.pir-ring.active{box-shadow:0 0 0 6px #f4c84233,0 0 0 14px #f4c84211;background:#f4c84233;animation:pir-pulse .8s infinite;}
+@keyframes pir-pulse{0%,100%{box-shadow:0 0 0 4px #f4c84244,0 0 0 12px #f4c84211}50%{box-shadow:0 0 0 10px #f4c84222,0 0 0 22px #f4c84208}}
+.water-tank{display:flex;justify-content:center;margin:6px 0;}
+.tank-body{width:56px;height:40px;border:2px solid var(--accent-blue);border-radius:4px;position:relative;overflow:hidden;background:var(--bg);}
+.tank-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,#4d8fff88,#4d8fffcc);transition:height .8s cubic-bezier(.4,0,.2,1);}
+.tank-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:.6rem;font-weight:700;color:white;text-shadow:0 1px 4px #000;}
+.flame.danger{filter:drop-shadow(0 0 8px var(--accent-red));animation:flicker .3s infinite alternate;}
+@keyframes flicker{from{opacity:1;transform:scale(1)}to{opacity:.7;transform:scale(.95)}}
+
+/* LOG PAGE */
+.log-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:18px;}
+.stat-box{background:var(--stat-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;transition:background .3s,border-color .3s;}
+.stat-num{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;}
+.stat-lbl{font-size:.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.log-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:background .3s;}
+.log-header{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-family:'Rajdhani',sans-serif;font-size:.92rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.log-full-list{max-height:60vh;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:4px;}
+.log-item{font-family:'Share Tech Mono',monospace;font-size:.68rem;padding:6px 11px;border-radius:7px;display:flex;gap:9px;align-items:center;}
+.log-item.info{background:#00c4ef12;color:var(--accent-cyan);border:1px solid #00c4ef20;}
+.log-item.warn{background:#f4c84212;color:#c9952a;border:1px solid #f4c84220;}
+.log-item.err{background:#ff2d5512;color:var(--accent-red);border:1px solid #ff2d5520;}
+[data-theme="light"] .log-item.info{background:#e0f7ff;color:#007aa3;border-color:#a0dcf5;}
+[data-theme="light"] .log-item.warn{background:#fff7e0;color:#8a5f00;border-color:#f0d080;}
+[data-theme="light"] .log-item.err{background:#ffe5ea;color:#a00020;border-color:#f0a0b0;}
+.log-time{opacity:.5;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🍳</div>
+    <div class="logo-text">
+      <h1>SMART KITCHEN</h1>
+      <p>Sistema de Monitoramento IoT</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-chip"><div class="dot online"></div>5 Sensores Online</div>
+    <div class="status-chip" id="alert-chip" style="display:none"><div class="dot alert"></div><span id="alert-text">ALERTA</span></div>
+    <div id="clock"></div>
+    <div class="theme-toggle">
+      <button class="tbtn active" id="td" onclick="setTheme('dark')">🌙 Escuro</button>
+      <button class="tbtn" id="tl" onclick="setTheme('light')">☀️ Claro</button>
+    </div>
+  </div>
+</header>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('planta')" id="tabt-planta">🏠 Planta Baixa</button>
+  <button class="tab-btn" onclick="switchTab('sensores')" id="tabt-sensores">📡 Sensores</button>
+  <button class="tab-btn" onclick="switchTab('log')" id="tabt-log">📋 Log <span class="tab-badge" id="log-badge">0</span></button>
+</div>
+
+<!-- ========== TAB PLANTA ========== -->
+<div class="tab-content active" id="tab-planta">
+<div class="page-planta">
+  <div class="kitchen-wrap">
+    <div class="kitchen-top-bar">
+      <h2>🏠 Planta Baixa — Sensores em Tempo Real</h2>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="live-badge">● LIVE</div>
+        <span style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">Toque nos ícones para detalhes</span>
+      </div>
+    </div>
+
+    <div class="kitchen-svg-area" id="kitchen-area">
+      <svg id="kitchen-svg" viewBox="0 0 800 430" xmlns="http://www.w3.org/2000/svg">
+        <!-- Wall -->
+        <rect width="800" height="430" fill="var(--svg-wall)"/>
+        <!-- Floor -->
+        <rect y="316" width="800" height="114" fill="var(--svg-floor)"/>
+        <!-- Floor grid -->
+        <g opacity="0.18">
+          <line x1="0" y1="338" x2="800" y2="338" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="0" y1="368" x2="800" y2="368" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="0" y1="398" x2="800" y2="398" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="0" y1="420" x2="800" y2="420" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="100" y1="316" x2="100" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="200" y1="316" x2="200" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="300" y1="316" x2="300" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="400" y1="316" x2="400" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="500" y1="316" x2="500" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="600" y1="316" x2="600" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+          <line x1="700" y1="316" x2="700" y2="430" stroke="var(--accent-blue)" stroke-width=".7"/>
+        </g>
+        <!-- Wall tiles -->
+        <g opacity="0.07">
+          <line x1="0" y1="40" x2="800" y2="40" stroke="var(--accent-blue)" stroke-width=".8"/>
+          <line x1="0" y1="80" x2="800" y2="80" stroke="var(--accent-blue)" stroke-width=".8"/>
+          <line x1="0" y1="230" x2="800" y2="230" stroke="var(--accent-blue)" stroke-width=".8"/>
+          <line x1="0" y1="260" x2="800" y2="260" stroke="var(--accent-blue)" stroke-width=".8"/>
+        </g>
+        <!-- Counter base -->
+        <rect x="20" y="270" width="738" height="56" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <!-- Counter edge -->
+        <rect x="20" y="266" width="738" height="12" rx="3" fill="var(--svg-dark)" stroke="var(--svg-cab-str)" stroke-width="1"/>
+        <!-- Lower cabinets -->
+        <rect x="26" y="282" width="88" height="42" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <rect x="65" y="301" width="10" height="6" rx="3" fill="var(--svg-handle)"/>
+        <rect x="122" y="282" width="108" height="42" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <rect x="172" y="301" width="10" height="6" rx="3" fill="var(--svg-handle)"/>
+        <rect x="238" y="282" width="108" height="42" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <rect x="288" y="301" width="10" height="6" rx="3" fill="var(--svg-handle)"/>
+        <!-- Stove drawers -->
+        <rect x="354" y="282" width="158" height="20" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <rect x="428" y="289" width="24" height="6" rx="3" fill="var(--svg-handle)"/>
+        <rect x="354" y="304" width="158" height="20" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <!-- Sink cabinet -->
+        <rect x="520" y="282" width="112" height="42" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <rect x="571" y="301" width="10" height="6" rx="3" fill="var(--svg-handle)"/>
+        <!-- End cabinet -->
+        <rect x="640" y="282" width="110" height="42" rx="3" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.2"/>
+        <rect x="690" y="301" width="10" height="6" rx="3" fill="var(--svg-handle)"/>
+        <!-- STOVE -->
+        <rect x="352" y="258" width="162" height="18" rx="2" fill="var(--svg-stove)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <ellipse cx="396" cy="268" rx="22" ry="8" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <ellipse cx="396" cy="268" rx="12" ry="5" fill="var(--svg-dark)" stroke="var(--svg-handle)" stroke-width="1"/>
+        <ellipse cx="396" cy="268" rx="4" ry="2.5" fill="#050a10"/>
+        <ellipse cx="468" cy="268" rx="22" ry="8" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <ellipse cx="468" cy="268" rx="12" ry="5" fill="var(--svg-dark)" stroke="var(--svg-handle)" stroke-width="1"/>
+        <ellipse cx="468" cy="268" rx="4" ry="2.5" fill="#050a10"/>
+        <!-- Knobs -->
+        <circle cx="357" cy="274" r="5" fill="var(--svg-handle)" stroke="var(--svg-cab-str)" stroke-width="1"/>
+        <circle cx="371" cy="274" r="5" fill="var(--svg-handle)" stroke="var(--svg-cab-str)" stroke-width="1"/>
+        <circle cx="385" cy="274" r="5" fill="var(--svg-handle)" stroke="var(--svg-cab-str)" stroke-width="1"/>
+        <circle cx="399" cy="274" r="5" fill="var(--svg-handle)" stroke="var(--svg-cab-str)" stroke-width="1"/>
+        <!-- Flames -->
+        <g id="flame1" opacity="0"><ellipse cx="396" cy="264" rx="6" ry="10" fill="#ff6b35" opacity=".85"/><ellipse cx="396" cy="262" rx="3.5" ry="6" fill="#f4c842" opacity=".9"/><ellipse cx="396" cy="261" rx="2" ry="3" fill="#fffde0" opacity=".7"/></g>
+        <g id="flame2" opacity="0"><ellipse cx="468" cy="264" rx="6" ry="10" fill="#ff6b35" opacity=".85"/><ellipse cx="468" cy="262" rx="3.5" ry="6" fill="#f4c842" opacity=".9"/><ellipse cx="468" cy="261" rx="2" ry="3" fill="#fffde0" opacity=".7"/></g>
+        <!-- SINK -->
+        <rect x="518" y="254" width="116" height="22" rx="3" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <rect x="522" y="257" width="50" height="16" rx="2" fill="#050a12" stroke="var(--svg-handle)" stroke-width="1"/>
+        <rect x="578" y="257" width="52" height="16" rx="2" fill="#050a12" stroke="var(--svg-handle)" stroke-width="1"/>
+        <rect x="617" y="242" width="5" height="18" rx="2.5" fill="var(--svg-handle)"/>
+        <rect x="604" y="242" width="28" height="4" rx="2" fill="var(--svg-handle)"/>
+        <circle cx="604" cy="244" r="4" fill="var(--svg-handle)" opacity=".65"/>
+        <circle cx="632" cy="244" r="4" fill="var(--svg-handle)" opacity=".65"/>
+        <!-- UPPER CABINETS -->
+        <rect x="26" y="88" width="118" height="118" rx="5" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <rect x="72" y="145" width="30" height="5" rx="2.5" fill="var(--svg-handle)"/>
+        <rect x="152" y="88" width="118" height="118" rx="5" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <rect x="198" y="145" width="30" height="5" rx="2.5" fill="var(--svg-handle)"/>
+        <rect x="278" y="88" width="68" height="118" rx="5" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <rect x="304" y="145" width="18" height="5" rx="2.5" fill="var(--svg-handle)"/>
+        <!-- MICROWAVE -->
+        <rect x="354" y="92" width="158" height="112" rx="6" fill="var(--svg-stove)" stroke="var(--svg-cab-str)" stroke-width="2"/>
+        <rect x="360" y="98" width="106" height="100" rx="4" fill="var(--svg-darker)" stroke="var(--svg-handle)" stroke-width="1"/>
+        <rect x="472" y="98" width="34" height="100" rx="0" fill="var(--svg-dark)" stroke="var(--svg-handle)" stroke-width=".5"/>
+        <circle cx="489" cy="128" r="10" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <circle cx="489" cy="148" r="7" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="1.5"/>
+        <circle cx="489" cy="165" r="5" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="1"/>
+        <!-- MW display -->
+        <rect x="368" y="110" width="96" height="28" rx="3" fill="#020810" stroke="#1e2d42" stroke-width="1"/>
+        <text x="416" y="129" text-anchor="middle" font-size="13" fill="#00c4ef" font-family="monospace" id="mw-clock">12:00</text>
+        <!-- WINDOW -->
+        <rect x="530" y="12" width="162" height="90" rx="5" fill="var(--svg-darker)" stroke="var(--svg-cab-str)" stroke-width="2"/>
+        <line x1="611" y1="12" x2="611" y2="102" stroke="var(--svg-cab-str)" stroke-width="2"/>
+        <line x1="530" y1="57" x2="692" y2="57" stroke="var(--svg-cab-str)" stroke-width="2"/>
+        <rect x="533" y="14" width="77" height="42" rx="2" fill="#0a1828" opacity=".7"/>
+        <rect x="614" y="14" width="76" height="42" rx="2" fill="#0a1828" opacity=".7"/>
+        <rect x="533" y="14" width="77" height="42" rx="2" fill="url(#wl)" opacity=".35"/>
+        <defs><linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity=".5"/><stop offset="100%" stop-color="#4d8fff" stop-opacity=".05"/></linearGradient></defs>
+        <!-- FRIDGE -->
+        <rect x="710" y="58" width="82" height="264" rx="6" fill="var(--svg-cabinet)" stroke="var(--svg-cab-str)" stroke-width="2"/>
+        <rect x="716" y="64" width="70" height="110" rx="4" fill="var(--svg-dark)" stroke="var(--svg-handle)" stroke-width="1"/>
+        <rect x="716" y="182" width="70" height="134" rx="4" fill="var(--svg-dark)" stroke="var(--svg-handle)" stroke-width="1"/>
+        <rect x="718" y="110" width="5" height="26" rx="2.5" fill="var(--svg-handle)"/>
+        <rect x="718" y="228" width="5" height="26" rx="2.5" fill="var(--svg-handle)"/>
+        <rect x="722" y="68" width="58" height="14" rx="3" fill="#020810" stroke="#1e2d42" stroke-width="1"/>
+        <text x="751" y="79" text-anchor="middle" font-size="8" fill="#2ecc40" font-family="monospace" id="fridge-temp">4°C</text>
+        <!-- Plants -->
+        <ellipse cx="342" cy="263" rx="13" ry="8" fill="#1a3020" stroke="#2a4a30" stroke-width="1"/>
+        <circle cx="334" cy="255" r="7" fill="#1a4025"/>
+        <circle cx="344" cy="252" r="9" fill="#1a4020"/>
+        <circle cx="342" cy="247" r="6" fill="#2a5030"/>
+
+        <!-- ===== SENSOR NODES ===== -->
+        <!-- Temp -->
+        <g class="svg-sensor" data-sensor="temp" style="cursor:pointer" transform="translate(432,226)">
+          <circle r="21" fill="#ff6b3520" stroke="#ff6b35" stroke-width="2"/>
+          <circle r="21" fill="none" stroke="#ff6b35" stroke-width="1" opacity=".3"><animate attributeName="r" values="21;34;21" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".3;0;.3" dur="2.2s" repeatCount="indefinite"/></circle>
+          <text x="0" y="7" text-anchor="middle" font-size="17">🌡️</text>
+          <rect x="-24" y="25" width="48" height="17" rx="4" fill="#0d1117cc"/>
+          <text x="0" y="37" text-anchor="middle" font-size="9.5" fill="#ff6b35" font-family="monospace" id="scene-temp-val">25°C</text>
+        </g>
+        <!-- Hum -->
+        <g class="svg-sensor" data-sensor="hum" style="cursor:pointer" transform="translate(578,226)">
+          <circle r="21" fill="#00c4ef20" stroke="#00c4ef" stroke-width="2"/>
+          <circle r="21" fill="none" stroke="#00c4ef" stroke-width="1" opacity=".3"><animate attributeName="r" values="21;34;21" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".3;0;.3" dur="2.4s" repeatCount="indefinite"/></circle>
+          <text x="0" y="7" text-anchor="middle" font-size="17">💧</text>
+          <rect x="-22" y="25" width="44" height="17" rx="4" fill="#0d1117cc"/>
+          <text x="0" y="37" text-anchor="middle" font-size="9.5" fill="#00c4ef" font-family="monospace" id="scene-hum-val">60%</text>
+        </g>
+        <!-- PIR -->
+        <g class="svg-sensor" data-sensor="pir" style="cursor:pointer" transform="translate(190,42)">
+          <circle r="21" fill="#f4c84220" stroke="#f4c842" stroke-width="2"/>
+          <circle r="21" fill="none" stroke="#f4c842" stroke-width="1" opacity=".3"><animate attributeName="r" values="21;36;21" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".3;0;.3" dur="2s" repeatCount="indefinite"/></circle>
+          <text x="0" y="7" text-anchor="middle" font-size="17">👁️</text>
+          <rect x="-24" y="25" width="48" height="17" rx="4" fill="#0d1117cc"/>
+          <text x="0" y="37" text-anchor="middle" font-size="9.5" fill="#f4c842" font-family="monospace" id="scene-pir-val">Livre</text>
+        </g>
+        <!-- Gas -->
+        <g class="svg-sensor" data-sensor="gas" style="cursor:pointer" transform="translate(308,226)">
+          <circle r="21" fill="#ff2d5520" stroke="#ff2d55" stroke-width="2"/>
+          <circle r="21" fill="none" stroke="#ff2d55" stroke-width="1" opacity=".3"><animate attributeName="r" values="21;34;21" dur="2.6s" repeatCount="indefinite"/><animate attributeName="opacity" values=".3;0;.3" dur="2.6s" repeatCount="indefinite"/></circle>
+          <text x="0" y="7" text-anchor="middle" font-size="17">💨</text>
+          <rect x="-26" y="25" width="52" height="17" rx="4" fill="#0d1117cc"/>
+          <text x="0" y="37" text-anchor="middle" font-size="9.5" fill="#ff2d55" font-family="monospace" id="scene-gas-val">Normal</text>
+        </g>
+        <!-- Water -->
+        <g class="svg-sensor" data-sensor="water" style="cursor:pointer" transform="translate(683,226)">
+          <circle r="21" fill="#4d8fff20" stroke="#4d8fff" stroke-width="2"/>
+          <circle r="21" fill="none" stroke="#4d8fff" stroke-width="1" opacity=".3"><animate attributeName="r" values="21;34;21" dur="2.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".3;0;.3" dur="2.8s" repeatCount="indefinite"/></circle>
+          <text x="0" y="7" text-anchor="middle" font-size="17">🪣</text>
+          <rect x="-22" y="25" width="44" height="17" rx="4" fill="#0d1117cc"/>
+          <text x="0" y="37" text-anchor="middle" font-size="9.5" fill="#4d8fff" font-family="monospace" id="scene-water-val">75%</text>
+        </g>
+        <!-- PIR scan rings -->
+        <g id="pir-scan" opacity="0" pointer-events="none">
+          <circle cx="190" cy="42" r="42" fill="none" stroke="#f4c842" stroke-width="1.2" opacity=".4"/>
+          <circle cx="190" cy="42" r="82" fill="none" stroke="#f4c842" stroke-width=".8" opacity=".22"/>
+          <circle cx="190" cy="42" r="134" fill="none" stroke="#f4c842" stroke-width=".5" opacity=".12"/>
+        </g>
+        <!-- Wire hints -->
+        <line x1="190" y1="63" x2="190" y2="86" stroke="#f4c84240" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="308" y1="247" x2="308" y2="266" stroke="#ff2d5540" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="432" y1="247" x2="432" y2="266" stroke="#ff6b3540" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="578" y1="247" x2="578" y2="266" stroke="#00c4ef40" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="683" y1="247" x2="683" y2="266" stroke="#4d8fff40" stroke-width="1" stroke-dasharray="3,3"/>
+      </svg>
+      <!-- Popup -->
+      <div class="sensor-popup" id="sensor-popup">
+        <div class="sp-name" id="sp-name">—</div>
+        <div id="sp-val" style="margin-bottom:2px;">—</div>
+        <div id="sp-status">—</div>
+        <div style="font-size:.58rem;color:var(--text-dim);margin-top:5px;">→ Ver na aba Sensores</div>
+      </div>
+    </div>
+
+    <div class="kitchen-legend">
+      <span style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-right:4px;">SENSORES ATIVOS:</span>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--accent-orange)"></div>🌡️ LM35</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--accent-cyan)"></div>💧 HL-69</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--accent-yellow)"></div>👁️ PIR</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--accent-red)"></div>💨 MQ-135</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--accent-blue)"></div>🪣 Nível Água</div>
+    </div>
+
+    <div class="bottom-strip">
+      <div class="bs-cell"><div class="bs-label2">Temperatura</div><div class="bs-val" id="bs-temp" style="color:var(--accent-orange)">25.0°C</div></div>
+      <div class="bs-cell"><div class="bs-label2">Umidade</div><div class="bs-val" id="bs-hum" style="color:var(--accent-cyan)">60%</div></div>
+      <div class="bs-cell"><div class="bs-label2">Movimento</div><div class="bs-val" id="bs-pir" style="color:var(--accent-yellow)">Livre</div></div>
+      <div class="bs-cell"><div class="bs-label2">Gás (ppm)</div><div class="bs-val" id="bs-gas" style="color:var(--accent-red)">120</div></div>
+      <div class="bs-cell"><div class="bs-label2">Água</div><div class="bs-val" id="bs-water" style="color:var(--accent-blue)">75%</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== TAB SENSORES ========== -->
+<div class="tab-content" id="tab-sensores">
+<div class="page-sensores">
+
+  <!-- TEMP -->
+  <div class="sensor-card temp" id="card-temp">
+    <div class="sc-header">
+      <div class="sc-title"><div class="sc-icon">🌡️</div><div><div class="sc-name">TEMPERATURA</div><div class="sc-model">LM35 · Analógico · 10mV/°C · 0–80°C</div></div></div>
+      <div class="sc-status ok" id="status-temp">NORMAL</div>
+    </div>
+    <div class="sc-value-row"><div class="sc-value" id="val-temp" style="color:var(--accent-orange)">25.0</div><div class="sc-unit">°C</div></div>
+    <div class="gauge-wrap">
+      <div class="gauge-label"><span>0°C</span><span>Zona: <span id="zone-temp">Conforto</span></span><span>80°C</span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="gauge-temp" style="width:31%;background:var(--accent-orange)"></div></div>
+    </div>
+    <svg class="mini-chart" viewBox="0 0 200 36"><polyline id="line-temp" fill="none" stroke="var(--accent-orange)" stroke-width="1.5" points=""/></svg>
+    <div class="controls-area">
+      <span style="font-size:.68rem;color:var(--text-dim);">Simular:</span>
+      <input type="range" id="slider-temp" min="0" max="80" value="25" step="0.5">
+      <span id="slider-temp-val" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--accent-orange);min-width:44px;">25.0°C</span>
+      <button class="ctrl-btn" id="btn-auto-temp" onclick="simulateTemp()">▶ AUTO</button>
+    </div>
+  </div>
+
+  <!-- HUM -->
+  <div class="sensor-card hum" id="card-hum">
+    <div class="sc-header">
+      <div class="sc-title"><div class="sc-icon">💧</div><div><div class="sc-name">UMIDADE DO SOLO</div><div class="sc-model">HL-69 · Resistivo/Capacitivo · 0–100%</div></div></div>
+      <div class="sc-status ok" id="status-hum">ÚMIDO</div>
+    </div>
+    <div class="sc-value-row"><div class="sc-value" id="val-hum" style="color:var(--accent-cyan)">60</div><div class="sc-unit">%</div></div>
+    <div class="gauge-wrap">
+      <div class="gauge-label"><span>Seco</span><span id="zone-hum">Adequado</span><span>Saturado</span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="gauge-hum" style="width:60%;background:var(--accent-cyan)"></div></div>
+    </div>
+    <svg class="mini-chart" viewBox="0 0 200 36"><polyline id="line-hum" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" points=""/></svg>
+    <div class="controls-area">
+      <span style="font-size:.68rem;color:var(--text-dim);">Nível:</span>
+      <input type="range" id="slider-hum" min="0" max="100" value="60" step="1">
+      <span id="slider-hum-val" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--accent-cyan);min-width:36px;">60%</span>
+      <button class="ctrl-btn" onclick="irrigate()">💦 Irrigar</button>
+    </div>
+  </div>
+
+  <!-- PIR -->
+  <div class="sensor-card pir" id="card-pir">
+    <div class="sc-header">
+      <div class="sc-title"><div class="sc-icon">👁️</div><div><div class="sc-name">MOVIMENTO (PIR)</div><div class="sc-model">HC-SR501 · Infravermelho Passivo · 120° · 3–7m</div></div></div>
+      <div class="sc-status ok" id="status-pir">LIVRE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;margin:8px 0;">
+      <div class="pir-ring" id="pir-ring"></div>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.55rem;font-weight:700;color:var(--accent-yellow)" id="val-pir">NENHUM</div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">Última detecção: <span id="pir-last">--:--:--</span></div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-top:2px;">Detecções hoje: <span id="pir-count" style="color:var(--accent-yellow)">0</span></div>
+      </div>
+    </div>
+    <div class="controls-area">
+      <button class="ctrl-btn" onclick="triggerMotion()">🚶 Simular Movimento</button>
+      <button class="ctrl-btn" onclick="resetPIR()">↺ Reset</button>
+      <button class="ctrl-btn" id="btn-auto-pir" onclick="toggleAutoPIR()">▶ AUTO</button>
+    </div>
+  </div>
+
+  <!-- GAS -->
+  <div class="sensor-card gas" id="card-gas">
+    <div class="sc-header">
+      <div class="sc-title"><div class="sc-icon">💨</div><div><div class="sc-name">QUALIDADE DO AR / GÁS</div><div class="sc-model">MQ-135 · NH₃ · CO₂ · Fumaça · Álcool</div></div></div>
+      <div class="sc-status ok" id="status-gas">SEGURO</div>
+    </div>
+    <div class="sc-value-row">
+      <div class="sc-value" id="val-gas" style="color:var(--accent-green)">120</div>
+      <div class="sc-unit">ppm</div>
+      <span class="flame" id="gas-flame" style="font-size:1.4rem;margin-left:12px">🔥</span>
+    </div>
+    <div class="gauge-wrap">
+      <div class="gauge-label"><span>0</span><span id="zone-gas">Bom</span><span>1000 ppm</span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="gauge-gas" style="width:12%;background:var(--accent-green)"></div></div>
+    </div>
+    <svg class="mini-chart" viewBox="0 0 200 36"><polyline id="line-gas" fill="none" stroke="var(--accent-red)" stroke-width="1.5" points=""/></svg>
+    <div class="controls-area">
+      <span style="font-size:.68rem;color:var(--text-dim);">Concentração:</span>
+      <input type="range" id="slider-gas" min="0" max="1000" value="120" step="5">
+      <span id="slider-gas-val" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--accent-red);min-width:50px;">120ppm</span>
+      <button class="ctrl-btn danger" onclick="gasAlert()">⚠️ Vazamento</button>
+    </div>
+  </div>
+
+  <!-- WATER -->
+  <div class="sensor-card water" id="card-water">
+    <div class="sc-header">
+      <div class="sc-title"><div class="sc-icon">🪣</div><div><div class="sc-name">NÍVEL DE ÁGUA</div><div class="sc-model">Capacitivo + HC-SR04 Ultrassônico</div></div></div>
+      <div class="sc-status ok" id="status-water">CHEIO</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;margin:5px 0;">
+      <div class="water-tank"><div class="tank-body"><div class="tank-fill" id="tank-fill" style="height:75%"><div class="tank-label" id="tank-label">75%</div></div></div></div>
+      <div>
+        <div class="sc-value-row" style="margin:0 0 3px 0;"><div class="sc-value" id="val-water" style="color:var(--accent-blue);font-size:2.2rem;">75</div><div class="sc-unit">%</div></div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">Volume: <span id="water-vol" style="color:var(--accent-blue)">15.0 L</span></div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-top:2px;">Capacidade: <span>20 L</span></div>
+      </div>
+    </div>
+    <div class="gauge-wrap" style="margin-top:8px;">
+      <div class="gauge-label"><span>Vazio</span><span id="zone-water">Normal</span><span>Cheio</span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="gauge-water" style="width:75%;background:var(--accent-blue)"></div></div>
+    </div>
+    <div class="controls-area">
+      <span style="font-size:.68rem;color:var(--text-dim);">Nível:</span>
+      <input type="range" id="slider-water" min="0" max="100" value="75" step="1">
+      <span id="slider-water-val" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--accent-blue);min-width:36px;">75%</span>
+      <button class="ctrl-btn" onclick="drainWater()">🚿 Esvaziar</button>
+      <button class="ctrl-btn" onclick="fillWater()">🚰 Encher</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB LOG ========== -->
+<div class="tab-content" id="tab-log">
+<div class="page-log">
+  <div class="log-stats">
+    <div class="stat-box"><div class="stat-num" id="stat-total" style="color:var(--accent-cyan)">0</div><div class="stat-lbl">Total Eventos</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-err" style="color:var(--accent-red)">0</div><div class="stat-lbl">Alertas Críticos</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-warn" style="color:var(--accent-yellow)">0</div><div class="stat-lbl">Avisos</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-pir2" style="color:var(--accent-yellow)">0</div><div class="stat-lbl">Detecções PIR</div></div>
+  </div>
+  <div class="log-wrap">
+    <div class="log-header"><span>📋 Registro Completo de Eventos</span><button class="ctrl-btn" onclick="clearLog()" style="font-size:.68rem;">🗑 Limpar</button></div>
+    <div class="log-full-list" id="log-full-list"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// THEME
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('td').classList.toggle('active',t==='dark');
+  document.getElementById('tl').classList.toggle('active',t==='light');
+}
+
+// TABS
+function switchTab(name){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('tabt-'+name).classList.add('active');
+  if(name==='log') document.getElementById('log-badge').classList.remove('show');
+}
+
+// CLOCK
+function updateClock(){
+  const t=new Date();
+  document.getElementById('clock').textContent=t.toLocaleTimeString('pt-BR');
+  document.getElementById('mw-clock').textContent=t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateClock,1000); updateClock();
+
+// LOG
+let logTotal=0,logErr=0,logWarn=0;
+function addLog(msg,type='info'){
+  const t=new Date().toLocaleTimeString('pt-BR');
+  logTotal++; if(type==='err')logErr++; if(type==='warn')logWarn++;
+  document.getElementById('stat-total').textContent=logTotal;
+  document.getElementById('stat-err').textContent=logErr;
+  document.getElementById('stat-warn').textContent=logWarn;
+  const list=document.getElementById('log-full-list');
+  const el=document.createElement('div');
+  el.className='log-item '+type;
+  el.innerHTML='<span class="log-time">['+t+']</span><span>'+msg+'</span>';
+  list.prepend(el);
+  while(list.children.length>100)list.removeChild(list.lastChild);
+  if(!document.getElementById('tab-log').classList.contains('active')&&(type==='err'||type==='warn')){
+    const b=document.getElementById('log-badge');
+    b.classList.add('show');
+    b.textContent=logErr+logWarn;
+  }
+}
+function clearLog(){
+  document.getElementById('log-full-list').innerHTML='';
+  logTotal=logErr=logWarn=0;
+  ['stat-total','stat-err','stat-warn'].forEach(id=>document.getElementById(id).textContent='0');
+}
+
+// CHARTS
+const histories={temp:[],hum:[],gas:[],water:[]};
+const maxPts=30;
+function pushHistory(key,val){
+  histories[key].push(val);
+  if(histories[key].length>maxPts)histories[key].shift();
+  redrawChart(key);
+}
+function redrawChart(key){
+  const d=histories[key]; if(d.length<2)return;
+  const mn=Math.min(...d),mx=Math.max(...d),rng=mx-mn||1;
+  const W=200,H=32,pad=2;
+  const pts=d.map((v,i)=>{
+    const x=pad+(i/(maxPts-1))*(W-2*pad);
+    const y=H-pad-((v-mn)/rng)*(H-2*pad);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  const el=document.getElementById('line-'+key);
+  if(el)el.setAttribute('points',pts);
+}
+
+// STATE
+const state={temp:25,hum:60,pir:false,pirCount:0,gas:120,water:75};
+
+// SENSOR POPUP
+document.querySelectorAll('.svg-sensor').forEach(g=>{
+  g.addEventListener('click',function(e){
+    const s=this.dataset.sensor;
+    const popup=document.getElementById('sensor-popup');
+    const area=document.getElementById('kitchen-area').getBoundingClientRect();
+    popup.style.left=(e.clientX-area.left+14)+'px';
+    popup.style.top=(e.clientY-area.top+14)+'px';
+    const info=getSensorInfo(s);
+    document.getElementById('sp-name').textContent=info.name;
+    document.getElementById('sp-name').style.color=info.color;
+    document.getElementById('sp-val').textContent=info.val;
+    document.getElementById('sp-status').textContent=info.status;
+    popup.classList.add('show');
+    setTimeout(()=>popup.classList.remove('show'),3200);
+    switchTab('sensores');
+  });
+});
+function getSensorInfo(s){
+  return{
+    temp:{name:'🌡️ LM35 — Temperatura',color:'var(--accent-orange)',val:'Valor: '+state.temp.toFixed(1)+'°C',status:'Zona: '+document.getElementById('zone-temp').textContent},
+    hum:{name:'💧 HL-69 — Umidade',color:'var(--accent-cyan)',val:'Valor: '+state.hum+'%',status:'Zona: '+document.getElementById('zone-hum').textContent},
+    pir:{name:'👁️ PIR — Movimento',color:'var(--accent-yellow)',val:'Status: '+(state.pir?'DETECTADO':'Livre'),status:'Detecções: '+state.pirCount},
+    gas:{name:'💨 MQ-135 — Gás',color:'var(--accent-red)',val:'Valor: '+Math.round(state.gas)+' ppm',status:'Zona: '+document.getElementById('zone-gas').textContent},
+    water:{name:'🪣 Nível de Água',color:'var(--accent-blue)',val:'Nível: '+state.water+'%',status:'Vol: '+(state.water*0.2).toFixed(1)+' L'},
+  }[s]||{name:s,color:'white',val:'',status:''};
+}
+
+// TEMPERATURE
+const sliderTemp=document.getElementById('slider-temp');
+let tempAutoInterval=null;
+sliderTemp.addEventListener('input',()=>{state.temp=parseFloat(sliderTemp.value);document.getElementById('slider-temp-val').textContent=state.temp.toFixed(1)+'°C';updateTemp();});
+function updateTemp(){
+  const v=state.temp;
+  document.getElementById('val-temp').textContent=v.toFixed(1);
+  document.getElementById('bs-temp').textContent=v.toFixed(1)+'°C';
+  document.getElementById('scene-temp-val').textContent=v.toFixed(1)+'°C';
+  document.getElementById('gauge-temp').style.width=(v/80*100)+'%';
+  let c,status,zone;
+  if(v<15){c='#00c4ef';status='FRIO';zone='Frio';}
+  else if(v<28){c='var(--accent-orange)';status='NORMAL';zone='Conforto';}
+  else if(v<45){c='#ff9944';status='QUENTE';zone='Quente';}
+  else{c='var(--accent-red)';status='CRÍTICO';zone='Perigo';}
+  document.getElementById('val-temp').style.color=c;
+  document.getElementById('gauge-temp').style.background=c;
+  document.getElementById('status-temp').textContent=status;
+  document.getElementById('zone-temp').textContent=zone;
+  document.getElementById('status-temp').className=v>=45?'sc-status danger':v>=35?'sc-status warn':'sc-status ok';
+  document.getElementById('card-temp').classList.toggle('alert-state',v>=45);
+  const f1=document.getElementById('flame1'),f2=document.getElementById('flame2');
+  if(v>45){f1.style.opacity='1';f2.style.opacity='1';}
+  else if(v>30){f1.style.opacity='0.55';f2.style.opacity='0';}
+  else{f1.style.opacity='0';f2.style.opacity='0';}
+  document.getElementById('fridge-temp').textContent=v>30?Math.max(1,(v/14).toFixed(0))+'°C':'4°C';
+  pushHistory('temp',v);
+  if(v>=45){addLog('🔴 Temperatura crítica: '+v.toFixed(1)+'°C','err');toggleAlert(true,'TEMP ALTA');}
+  else if(v>=35)addLog('🟡 Temperatura elevada: '+v.toFixed(1)+'°C','warn');
+  else checkAlerts();
+}
+function simulateTemp(){
+  if(tempAutoInterval){clearInterval(tempAutoInterval);tempAutoInterval=null;document.getElementById('btn-auto-temp').textContent='▶ AUTO';document.getElementById('btn-auto-temp').classList.remove('active-btn');return;}
+  document.getElementById('btn-auto-temp').textContent='■ STOP';
+  document.getElementById('btn-auto-temp').classList.add('active-btn');
+  let t=0;
+  tempAutoInterval=setInterval(()=>{
+    t+=0.05;
+    state.temp=22+Math.sin(t)*15+Math.random()*2;
+    state.temp=Math.max(0,Math.min(80,state.temp));
+    sliderTemp.value=state.temp;
+    document.getElementById('slider-temp-val').textContent=state.temp.toFixed(1)+'°C';
+    updateTemp();
+  },600);
+}
+
+// HUMIDITY
+const sliderHum=document.getElementById('slider-hum');
+sliderHum.addEventListener('input',()=>{state.hum=parseInt(sliderHum.value);document.getElementById('slider-hum-val').textContent=state.hum+'%';updateHum();});
+function updateHum(){
+  const v=state.hum;
+  document.getElementById('val-hum').textContent=v;
+  document.getElementById('bs-hum').textContent=v+'%';
+  document.getElementById('scene-hum-val').textContent=v+'%';
+  document.getElementById('gauge-hum').style.width=v+'%';
+  let c,status,zone;
+  if(v<20){c='var(--accent-red)';status='SECO';zone='Seco — Risco';}
+  else if(v<40){c='var(--accent-yellow)';status='BAIXO';zone='Baixo';}
+  else if(v<70){c='var(--accent-cyan)';status='ÚMIDO';zone='Adequado';}
+  else if(v<85){c='#4d8fff';status='ALTO';zone='Encharcado';}
+  else{c='var(--accent-red)';status='SATURADO';zone='Saturado';}
+  document.getElementById('val-hum').style.color=c;
+  document.getElementById('gauge-hum').style.background=c;
+  document.getElementById('status-hum').textContent=status;
+  document.getElementById('zone-hum').textContent=zone;
+  document.getElementById('status-hum').className=v>=85?'sc-status danger':v<20?'sc-status warn':'sc-status ok';
+  pushHistory('hum',v);
+}
+function irrigate(){
+  addLog('💦 Irrigação ativada','info');
+  let t=0;
+  const iv=setInterval(()=>{state.hum=Math.min(100,state.hum+2);sliderHum.value=state.hum;document.getElementById('slider-hum-val').textContent=state.hum+'%';updateHum();if(++t>=10||state.hum>=90){clearInterval(iv);addLog('✅ Irrigação concluída','info');}},300);
+}
+
+// PIR
+let pirAutoReset=null,pirAutoInterval=null;
+function triggerMotion(){
+  state.pir=true;state.pirCount++;
+  document.getElementById('stat-pir2').textContent=state.pirCount;
+  const now=new Date().toLocaleTimeString('pt-BR');
+  document.getElementById('val-pir').textContent='DETECTADO!';
+  document.getElementById('val-pir').style.color='var(--accent-red)';
+  document.getElementById('pir-ring').classList.add('active');
+  document.getElementById('pir-last').textContent=now;
+  document.getElementById('pir-count').textContent=state.pirCount;
+  document.getElementById('status-pir').textContent='ATIVADO';
+  document.getElementById('status-pir').className='sc-status danger';
+  document.getElementById('bs-pir').textContent='DETECTADO';
+  document.getElementById('scene-pir-val').textContent='Detec.';
+  document.getElementById('pir-scan').style.opacity='1';
+  document.getElementById('card-pir').classList.add('alert-state');
+  addLog('🚨 Movimento detectado na cozinha!','err');
+  toggleAlert(true,'MOVIMENTO');
+  if(pirAutoReset)clearTimeout(pirAutoReset);
+  pirAutoReset=setTimeout(resetPIR,5000);
+}
+function resetPIR(){
+  state.pir=false;
+  document.getElementById('val-pir').textContent='NENHUM';
+  document.getElementById('val-pir').style.color='var(--accent-yellow)';
+  document.getElementById('pir-ring').classList.remove('active');
+  document.getElementById('status-pir').textContent='LIVRE';
+  document.getElementById('status-pir').className='sc-status ok';
+  document.getElementById('bs-pir').textContent='Livre';
+  document.getElementById('scene-pir-val').textContent='Livre';
+  document.getElementById('pir-scan').style.opacity='0';
+  document.getElementById('card-pir').classList.remove('alert-state');
+  checkAlerts();
+}
+function toggleAutoPIR(){
+  if(pirAutoInterval){clearInterval(pirAutoInterval);pirAutoInterval=null;document.getElementById('btn-auto-pir').textContent='▶ AUTO';document.getElementById('btn-auto-pir').classList.remove('active-btn');return;}
+  document.getElementById('btn-auto-pir').textContent='■ STOP';
+  document.getElementById('btn-auto-pir').classList.add('active-btn');
+  pirAutoInterval=setInterval(()=>{if(Math.random()<0.3)triggerMotion();},3000);
+}
+
+// GAS
+const sliderGas=document.getElementById('slider-gas');
+sliderGas.addEventListener('input',()=>{state.gas=parseInt(sliderGas.value);document.getElementById('slider-gas-val').textContent=state.gas+'ppm';updateGas();});
+function updateGas(){
+  const v=state.gas;
+  document.getElementById('val-gas').textContent=Math.round(v);
+  document.getElementById('bs-gas').textContent=Math.round(v);
+  document.getElementById('scene-gas-val').textContent=v>400?'ALERTA':v>200?'Elev.':'Normal';
+  document.getElementById('gauge-gas').style.width=(v/1000*100)+'%';
+  let c,status,zone;
+  if(v<150){c='var(--accent-green)';status='SEGURO';zone='Bom';}
+  else if(v<300){c='var(--accent-yellow)';status='MÉDIO';zone='Moderado';}
+  else if(v<600){c='var(--accent-orange)';status='ALTO';zone='Perigoso';}
+  else{c='var(--accent-red)';status='CRÍTICO';zone='RISCO DE VIDA';}
+  document.getElementById('val-gas').style.color=c;
+  document.getElementById('gauge-gas').style.background=c;
+  document.getElementById('status-gas').textContent=status;
+  document.getElementById('zone-gas').textContent=zone;
+  document.getElementById('status-gas').className=v>=600?'sc-status danger':v>=300?'sc-status warn':'sc-status ok';
+  document.getElementById('card-gas').classList.toggle('alert-state',v>=600);
+  document.getElementById('gas-flame').classList.toggle('danger',v>=400);
+  pushHistory('gas',v);
+  if(v>=600){addLog('🔴 GÁS CRÍTICO: '+Math.round(v)+'ppm — EVACUAR!','err');toggleAlert(true,'GÁS CRÍTICO');}
+  else if(v>=300)addLog('🟡 Gás elevado: '+Math.round(v)+'ppm','warn');
+  else checkAlerts();
+}
+function gasAlert(){
+  addLog('⚠️ Simulando vazamento de gás...','warn');
+  let t=0;
+  const iv=setInterval(()=>{state.gas=Math.min(1000,state.gas+35+Math.random()*15);sliderGas.value=state.gas;document.getElementById('slider-gas-val').textContent=Math.round(state.gas)+'ppm';updateGas();if(++t>=22||state.gas>=920)clearInterval(iv);},200);
+}
+
+// WATER
+const sliderWater=document.getElementById('slider-water');
+sliderWater.addEventListener('input',()=>{state.water=parseInt(sliderWater.value);document.getElementById('slider-water-val').textContent=state.water+'%';updateWater();});
+function updateWater(){
+  const v=state.water;
+  document.getElementById('val-water').textContent=v;
+  document.getElementById('bs-water').textContent=v+'%';
+  document.getElementById('scene-water-val').textContent=v+'%';
+  document.getElementById('tank-fill').style.height=v+'%';
+  document.getElementById('tank-label').textContent=v+'%';
+  document.getElementById('water-vol').textContent=(v*0.2).toFixed(1)+' L';
+  document.getElementById('gauge-water').style.width=v+'%';
+  let c,status,zone;
+  if(v<=10){c='var(--accent-red)';status='VAZIO';zone='Crítico';}
+  else if(v<=30){c='var(--accent-orange)';status='BAIXO';zone='Baixo';}
+  else if(v<=70){c='var(--accent-blue)';status='NORMAL';zone='Normal';}
+  else if(v<=90){c='var(--accent-cyan)';status='CHEIO';zone='Cheio';}
+  else{c='#4d8fff';status='MÁXIMO';zone='Máximo';}
+  document.getElementById('val-water').style.color=c;
+  document.getElementById('tank-fill').style.background='linear-gradient(180deg,'+c+'88,'+c+'cc)';
+  document.getElementById('status-water').textContent=status;
+  document.getElementById('zone-water').textContent=zone;
+  document.getElementById('status-water').className=v<=10?'sc-status danger':v<=30?'sc-status warn':'sc-status ok';
+  document.getElementById('gauge-water').style.background=c;
+  document.getElementById('card-water').classList.toggle('alert-state',v<=10);
+  pushHistory('water',v);
+  if(v<=10){addLog('🔴 Nível crítico de água: '+v+'%','err');toggleAlert(true,'ÁGUA BAIXA');}
+  else if(v<=25)addLog('🟡 Nível de água baixo: '+v+'%','warn');
+  else checkAlerts();
+}
+function drainWater(){
+  addLog('🚿 Esvaziando reservatório...','info');
+  let t=0;
+  const iv=setInterval(()=>{state.water=Math.max(0,state.water-3);sliderWater.value=state.water;document.getElementById('slider-water-val').textContent=state.water+'%';updateWater();if(++t>=30||state.water<=0){clearInterval(iv);addLog('✅ Esvaziamento concluído','info');}},200);
+}
+function fillWater(){
+  addLog('🚰 Enchendo reservatório...','info');
+  let t=0;
+  const iv=setInterval(()=>{state.water=Math.min(100,state.water+3);sliderWater.value=state.water;document.getElementById('slider-water-val').textContent=state.water+'%';updateWater();if(++t>=30||state.water>=100){clearInterval(iv);addLog('✅ Reservatório cheio','info');}},200);
+}
+
+// ALERTS
+function toggleAlert(on,msg){
+  document.getElementById('alert-chip').style.display=on?'flex':'none';
+  if(on)document.getElementById('alert-text').textContent='⚠ '+msg;
+}
+function checkAlerts(){
+  if(state.temp<45&&state.gas<600&&state.water>10)toggleAlert(false);
+}
+
+// REALTIME NOISE
+setInterval(()=>{
+  if(!sliderTemp.matches(':active')&&!tempAutoInterval){
+    state.temp+=(Math.random()-.5)*.25;
+    state.temp=Math.max(0,Math.min(80,state.temp));
+    sliderTemp.value=state.temp;
+    document.getElementById('slider-temp-val').textContent=state.temp.toFixed(1)+'°C';
+    updateTemp();
+  }
+  if(!sliderHum.matches(':active')){
+    const nv=Math.max(0,Math.min(100,state.hum+(Math.random()-.5)*.6));
+    pushHistory('hum',nv);
+  }
+  if(!sliderGas.matches(':active')){
+    state.gas+=(Math.random()-.5)*3;
+    state.gas=Math.max(0,Math.min(1000,state.gas));
+    pushHistory('gas',state.gas);
+  }
+  pushHistory('water',state.water);
+},1200);
+
+// INIT
+addLog('🟢 Smart Kitchen v2 iniciado','info');
+addLog('📡 5 sensores conectados e operacionais','info');
+addLog('🌡️ LM35 calibrado: 10mV/°C','info');
+addLog('💧 HL-69 — modo resistivo ativo','info');
+addLog('👁️ PIR HC-SR501 — campo 120° ativo','info');
+addLog('💨 MQ-135 warm-up concluído','info');
+addLog('🪣 Sensor ultrassônico HC-SR04 OK','info');
+updateTemp();updateHum();updateGas();updateWater();
+for(let i=0;i<22;i++){
+  pushHistory('temp',22+Math.random()*6);
+  pushHistory('hum',55+Math.random()*15);
+  pushHistory('gas',100+Math.random()*60);
+  pushHistory('water',70+Math.random()*10);
+}
+</script>
+</body>
+</html>
