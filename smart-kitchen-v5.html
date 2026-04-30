@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozinha Inteligente — IoT v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"]{--bg:#0d1117;--panel:#161b22;--card:#1c2230;--border:#2a3245;--text-main:#e6edf3;--text-dim:#8b949e;--header-bg:linear-gradient(135deg,#0d1117 0%,#161b22 100%);--tab-bg:#0f1420;--tab-active:#1c2230;--tab-hover:#161e2e;--scrollbar:#2a3245;--stat-bg:#1c2230;}
+[data-theme="light"]{--bg:#f0f2f7;--panel:#ffffff;--card:#f7f8fc;--border:#dde1ec;--text-main:#1a1f2e;--text-dim:#6b7280;--header-bg:linear-gradient(135deg,#1a1f2e 0%,#252d3e 100%);--tab-bg:#e8eaf2;--tab-active:#ffffff;--tab-hover:#f0f2f8;--scrollbar:#dde1ec;--stat-bg:#ffffff;}
+:root{--ay:#f4c842;--ao:#ff6b35;--ac:#00c4ef;--ag:#2ecc40;--ar:#ff2d55;--ab:#4d8fff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:'Exo 2',sans-serif;color:var(--text-main);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s;}
+header{background:var(--header-bg);border-bottom:2px solid var(--ay);padding:12px 26px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px #f4c84218;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{font-size:1.8rem;filter:drop-shadow(0 0 8px var(--ay));}
+.logo-text h1{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--ay);letter-spacing:2px;}
+.logo-text p{font-size:.62rem;color:#8b949e;letter-spacing:4px;text-transform:uppercase;}
+.hdr-r{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.schip{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:.7rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#9ca3af;padding:5px 12px;border-radius:20px;}
+[data-theme="light"] .schip{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);color:#4b5563;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot.on{background:var(--ag);box-shadow:0 0 8px #2ecc4066;animation:blink 2s infinite;}
+.dot.al{background:var(--ar);box-shadow:0 0 10px #ff2d5566;animation:blink .6s infinite;}
+#clock{font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--ac);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ttheme{display:flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:3px;gap:2px;}
+[data-theme="light"] .ttheme{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);}
+.tbtn{border:none;cursor:pointer;padding:5px 11px;border-radius:20px;font-size:.72rem;font-family:'Exo 2',sans-serif;font-weight:600;color:#9ca3af;background:transparent;transition:all .22s;}
+.tbtn.active{background:var(--ay);color:#0d1117;}
+[data-theme="light"] .tbtn{color:#6b7280;}
+[data-theme="light"] .tbtn.active{background:#1a1f2e;color:var(--ay);}
+#abanner{display:none;position:sticky;top:64px;z-index:190;width:100%;background:linear-gradient(90deg,#ff2d55dd,#ff6b35dd);border-bottom:2px solid var(--ar);}
+#abanner.show{display:block;animation:sdown .3s ease;}
+@keyframes sdown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.abinner{display:flex;align-items:center;justify-content:space-between;padding:10px 26px;flex-wrap:wrap;gap:8px;}
+.abmsgs{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.abchip{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 13px;font-family:'Share Tech Mono',monospace;font-size:.72rem;color:#fff;font-weight:600;}
+.abchip .dot{background:#fff;animation:blink .5s infinite;}
+.abtit{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:#fff;letter-spacing:2px;display:flex;align-items:center;gap:8px;}
+.abclose{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:.72rem;font-family:'Exo 2',sans-serif;transition:all .2s;}
+.abclose:hover{background:rgba(0,0,0,.5);}
+#toastc{position:fixed;top:80px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 15px;min-width:240px;max-width:300px;font-family:'Share Tech Mono',monospace;font-size:.7rem;box-shadow:0 8px 32px #0008;display:flex;align-items:flex-start;gap:9px;pointer-events:all;animation:tin .3s ease;transition:opacity .4s,transform .4s;}
+.toast.out{opacity:0;transform:translateX(100%);}
+.toast.err{border-left:4px solid var(--ar);}
+.toast.warn{border-left:4px solid var(--ay);}
+.toast.info{border-left:4px solid var(--ac);}
+.ticon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.ttit{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:2px;}
+.tmsg{color:var(--text-dim);font-size:.65rem;line-height:1.4;}
+@keyframes tin{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+.tnav{display:flex;background:var(--tab-bg);border-bottom:2px solid var(--border);padding:0 26px;}
+.tbtn2{background:transparent;border:none;border-bottom:3px solid transparent;color:var(--text-dim);padding:12px 20px 9px;font-family:'Rajdhani',sans-serif;font-size:.92rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;margin-bottom:-2px;}
+.tbtn2:hover{color:var(--text-main);background:var(--tab-hover);}
+.tbtn2.active{color:var(--ay);border-bottom-color:var(--ay);background:var(--tab-active);}
+.tbadge{background:var(--ar);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;font-family:'Share Tech Mono',monospace;display:none;}
+.tbadge.show{display:inline-block;animation:blink 1s infinite;}
+.tc{display:none;animation:fin .25s ease;}
+.tc.active{display:block;}
+@keyframes fin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.pp{padding:22px 26px;max-width:1280px;margin:0 auto;}
+.ps{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;padding:22px 26px;max-width:1280px;margin:0 auto;}
+.pl{padding:22px 26px;max-width:860px;margin:0 auto;}
+.kwrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.ktop{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.ktop h2{font-family:'Rajdhani',sans-serif;font-size:.95rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.live{background:var(--ar);color:white;font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:2px;animation:blink 1.5s infinite;}
+.karea{padding:0;position:relative;}
+#ksvg{width:100%;height:auto;display:block;}
+.spop{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--text-main);pointer-events:none;z-index:50;display:none;min-width:140px;box-shadow:0 8px 24px #0007;}
+.spop.show{display:block;}
+.spname{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:4px;}
+.kleg{display:flex;gap:14px;flex-wrap:wrap;padding:9px 18px;border-top:1px solid var(--border);background:var(--tab-bg);}
+.legi{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--text-dim);}
+.legd{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.bstrip{display:flex;border-top:1px solid var(--border);background:var(--panel);flex-wrap:wrap;}
+.bsc{flex:1;min-width:90px;padding:9px 14px;border-right:1px solid var(--border);text-align:center;}
+.bsc:last-child{border-right:none;}
+.bslbl{font-size:.55rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;font-family:'Share Tech Mono',monospace;}
+.bsv{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;transition:border-color .3s,box-shadow .3s;position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+.scard.temp::before{background:var(--ao);}
+.scard.hum::before{background:var(--ac);}
+.scard.pir::before{background:var(--ay);}
+.scard.gas::before{background:var(--ar);}
+.scard.water::before{background:var(--ab);}
+.scard.alrt{animation:calrt .5s ease infinite alternate;}
+@keyframes calrt{from{border-color:var(--border);box-shadow:none}to{border-color:var(--ar);box-shadow:0 0 20px #ff2d5533}}
+.sch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;}
+.sct{display:flex;align-items:center;gap:10px;}
+.sci{font-size:1.35rem;}
+.scn{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;letter-spacing:1px;}
+.scm{font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;}
+.scs{font-size:.6rem;padding:3px 8px;border-radius:10px;font-family:'Share Tech Mono',monospace;font-weight:600;letter-spacing:1px;}
+.scs.ok{background:#2ecc4020;color:var(--ag);border:1px solid #2ecc4044;}
+.scs.warn{background:#f4c84220;color:#c9952a;border:1px solid #f4c84244;}
+.scs.danger{background:#ff2d5520;color:var(--ar);border:1px solid #ff2d5544;}
+[data-theme="light"] .scs.ok{background:#d4f7db;color:#1a7a30;border-color:#7dcf90;}
+[data-theme="light"] .scs.warn{background:#fff3cd;color:#8a6000;border-color:#f0c040;}
+[data-theme="light"] .scs.danger{background:#ffe0e6;color:#b00020;border-color:#f08090;}
+.svr{display:flex;align-items:flex-end;gap:5px;margin-bottom:9px;}
+.svv{font-family:'Rajdhani',sans-serif;font-size:2.6rem;font-weight:700;line-height:1;transition:color .5s;}
+.svu{font-size:.9rem;color:var(--text-dim);margin-bottom:4px;font-family:'Share Tech Mono',monospace;}
+.gw{margin-bottom:9px;}
+.gl{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text-dim);margin-bottom:4px;font-family:'Share Tech Mono',monospace;}
+.gt{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.gf{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1),background .5s;}
+.mc{width:100%;height:36px;}
+.cta{display:flex;gap:7px;align-items:center;margin-top:9px;flex-wrap:wrap;}
+.cb{background:var(--panel);border:1px solid var(--border);color:var(--text-main);padding:5px 11px;border-radius:8px;font-size:.7rem;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;}
+.cb:hover{border-color:var(--ac);color:var(--ac);}
+.cb.act{background:var(--ac);color:#0d1117;border-color:var(--ac);font-weight:700;}
+.cb.dng{border-color:var(--ar);color:var(--ar);}
+.cb.dng:hover{background:var(--ar);color:white;}
+input[type=range]{flex:1;min-width:70px;accent-color:var(--ac);cursor:pointer;}
+.pirring{width:24px;height:24px;border-radius:50%;border:2px solid var(--ay);display:inline-block;}
+.pirring.active{box-shadow:0 0 0 6px #f4c84233;background:#f4c84233;animation:pp2 .8s infinite;}
+@keyframes pp2{0%,100%{box-shadow:0 0 0 4px #f4c84244}50%{box-shadow:0 0 0 10px #f4c84222}}
+.wtank{display:flex;justify-content:center;margin:6px 0;}
+.tbody{width:56px;height:40px;border:2px solid var(--ab);border-radius:4px;position:relative;overflow:hidden;background:var(--bg);}
+.tfill{position:absolute;bottom:0;left:0;right:0;transition:height .8s cubic-bezier(.4,0,.2,1);}
+.tlbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:.6rem;font-weight:700;color:white;text-shadow:0 1px 4px #000;}
+.flame.dng{filter:drop-shadow(0 0 8px var(--ar));animation:flk .3s infinite alternate;}
+@keyframes flk{from{opacity:1;transform:scale(1)}to{opacity:.7;transform:scale(.95)}}
+.lstats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:18px;}
+.sbox{background:var(--stat-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;}
+.snum{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;}
+.slbl{font-size:.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.lwrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.lhdr{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-family:'Rajdhani',sans-serif;font-size:.92rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.llist{max-height:60vh;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:4px;}
+.li{font-family:'Share Tech Mono',monospace;font-size:.68rem;padding:6px 11px;border-radius:7px;display:flex;gap:9px;align-items:center;}
+.li.info{background:#00c4ef12;color:var(--ac);border:1px solid #00c4ef20;}
+.li.warn{background:#f4c84212;color:#c9952a;border:1px solid #f4c84220;}
+.li.err{background:#ff2d5512;color:var(--ar);border:1px solid #ff2d5520;}
+[data-theme="light"] .li.info{background:#e0f7ff;color:#007aa3;border-color:#a0dcf5;}
+[data-theme="light"] .li.warn{background:#fff7e0;color:#8a5f00;border-color:#f0d080;}
+[data-theme="light"] .li.err{background:#ffe5ea;color:#a00020;border-color:#f0a0b0;}
+.lt{opacity:.5;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:2px;}
+#kov{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:40;pointer-events:none;}
+.kchip{display:flex;align-items:center;gap:6px;background:rgba(10,12,20,.82);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 11px;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:#fff;backdrop-filter:blur(4px);}
+.kchip.kal{border-color:#ff2d5588;background:rgba(180,0,30,.75);animation:blink .7s infinite;}
+.kchip.kw{border-color:#f4c84288;background:rgba(140,90,0,.75);}
+.kchip.kok{border-color:#2ecc4060;background:rgba(0,80,20,.6);}
+
+/* Full-screen fire overlay */
+#fire-overlay{position:absolute;inset:0;pointer-events:none;z-index:30;display:none;}
+#fire-overlay.active{display:block;}
+.fire-canvas{position:absolute;inset:0;width:100%;height:100%;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-icon">🍳</div><div class="logo-text"><h1>SMART KITCHEN</h1><p>Sistema de Monitoramento IoT v5</p></div></div>
+  <div class="hdr-r">
+    <div class="schip"><div class="dot on"></div>5 Sensores Online</div>
+    <div class="schip" id="ahdr" style="display:none"><div class="dot al"></div><span id="ahtxt">ALERTA</span></div>
+    <div id="clock"></div>
+    <div class="ttheme">
+      <button class="tbtn active" id="tbd" onclick="setTheme('dark')">🌙 Escuro</button>
+      <button class="tbtn" id="tbl" onclick="setTheme('light')">☀️ Claro</button>
+    </div>
+  </div>
+</header>
+<div id="abanner">
+  <div class="abinner">
+    <div class="abtit">⚠ ALERTA ATIVO <span style="font-size:.7rem;font-family:'Share Tech Mono',monospace;font-weight:400;opacity:.85" id="abt"></span></div>
+    <div class="abmsgs" id="abmsgs"></div>
+    <button class="abclose" onclick="dismissBanner()">✕ Dispensar</button>
+  </div>
+</div>
+<div id="toastc"></div>
+<div class="tnav">
+  <button class="tbtn2 active" onclick="switchTab('planta')" id="tabt-planta">🏠 Planta Baixa</button>
+  <button class="tbtn2" onclick="switchTab('sensores')" id="tabt-sensores">📡 Sensores</button>
+  <button class="tbtn2" onclick="switchTab('log')" id="tabt-log">📋 Log <span class="tbadge" id="lbadge">0</span></button>
+</div>
+
+<!-- TAB PLANTA -->
+<div class="tc active" id="tab-planta">
+<div class="pp">
+  <div class="kwrap">
+    <div class="ktop">
+      <h2>🏠 Planta Baixa — Sensores em Tempo Real</h2>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="live">● LIVE</div>
+        <span style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace">Toque nos ícones p/ detalhes</span>
+      </div>
+    </div>
+    <div class="karea" id="karea">
+      <div id="kov"></div>
+
+      <!-- FIRE OVERLAY (full scene) -->
+      <div id="fire-overlay">
+        <canvas id="fire-canvas" class="fire-canvas"></canvas>
+      </div>
+
+      <svg id="ksvg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2a1535"/>
+            <stop offset="100%" stop-color="#1e0e28"/>
+          </linearGradient>
+          <linearGradient id="gFloor" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1a2030"/>
+            <stop offset="100%" stop-color="#0e1420"/>
+          </linearGradient>
+          <linearGradient id="gCab" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1e7070"/>
+            <stop offset="100%" stop-color="#0d4040"/>
+          </linearGradient>
+          <linearGradient id="gCabDark" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#155858"/>
+            <stop offset="100%" stop-color="#082828"/>
+          </linearGradient>
+          <linearGradient id="gCounter" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6a4a32"/>
+            <stop offset="100%" stop-color="#3e2818"/>
+          </linearGradient>
+          <linearGradient id="gFridge" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#1e7070"/>
+            <stop offset="100%" stop-color="#155050"/>
+          </linearGradient>
+          <radialGradient id="gLamp" cx="50%" cy="0%" r="80%">
+            <stop offset="0%" stop-color="#fff8d0" stop-opacity=".7"/>
+            <stop offset="100%" stop-color="#f4c842" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gWindow" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#5090cc" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#1a3060" stop-opacity=".2"/>
+          </radialGradient>
+          <radialGradient id="gFlame" cx="50%" cy="80%" r="60%">
+            <stop offset="0%" stop-color="#fffde0"/>
+            <stop offset="50%" stop-color="#f4c842"/>
+            <stop offset="100%" stop-color="#ff6b35" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="fblur2"><feGaussianBlur stdDeviation="2"/></filter>
+          <filter id="fblur5"><feGaussianBlur stdDeviation="5"/></filter>
+          <filter id="fblur8"><feGaussianBlur stdDeviation="8"/></filter>
+          <clipPath id="cpWall"><rect x="0" y="0" width="900" height="340"/></clipPath>
+          <clipPath id="cpScene"><rect x="0" y="0" width="900" height="520"/></clipPath>
+        </defs>
+
+        <!-- === WALL === -->
+        <rect width="900" height="340" fill="url(#gWall)"/>
+        <!-- Wall tile grid -->
+        <g opacity=".12" fill="none" stroke="#c06040" stroke-width=".6">
+          <line x1="0" y1="60" x2="900" y2="60"/><line x1="0" y1="120" x2="900" y2="120"/>
+          <line x1="0" y1="180" x2="900" y2="180"/><line x1="0" y1="240" x2="900" y2="240"/>
+          <line x1="0" y1="300" x2="900" y2="300"/>
+          <line x1="60" y1="0" x2="60" y2="340"/><line x1="120" y1="0" x2="120" y2="340"/>
+          <line x1="180" y1="0" x2="180" y2="340"/><line x1="240" y1="0" x2="240" y2="340"/>
+          <line x1="300" y1="0" x2="300" y2="340"/><line x1="360" y1="0" x2="360" y2="340"/>
+          <line x1="420" y1="0" x2="420" y2="340"/><line x1="480" y1="0" x2="480" y2="340"/>
+          <line x1="540" y1="0" x2="540" y2="340"/><line x1="600" y1="0" x2="600" y2="340"/>
+          <line x1="660" y1="0" x2="660" y2="340"/><line x1="720" y1="0" x2="720" y2="340"/>
+          <line x1="780" y1="0" x2="780" y2="340"/><line x1="840" y1="0" x2="840" y2="340"/>
+        </g>
+        <!-- Ceiling -->
+        <rect width="900" height="20" fill="#0d0a18" opacity=".92"/>
+        <rect y="18" width="900" height="3" fill="#c8a86a" opacity=".4"/>
+
+        <!-- === FLOOR === -->
+        <rect y="340" width="900" height="180" fill="url(#gFloor)"/>
+        <!-- Floor tiles -->
+        <g opacity=".2" fill="none" stroke="#4a6080" stroke-width=".6">
+          <line x1="0" y1="370" x2="900" y2="370"/><line x1="0" y1="400" x2="900" y2="400"/>
+          <line x1="0" y1="430" x2="900" y2="430"/><line x1="0" y1="460" x2="900" y2="460"/>
+          <line x1="0" y1="490" x2="900" y2="490"/>
+          <line x1="90" y1="340" x2="90" y2="520"/><line x1="180" y1="340" x2="180" y2="520"/>
+          <line x1="270" y1="340" x2="270" y2="520"/><line x1="360" y1="340" x2="360" y2="520"/>
+          <line x1="450" y1="340" x2="450" y2="520"/><line x1="540" y1="340" x2="540" y2="520"/>
+          <line x1="630" y1="340" x2="630" y2="520"/><line x1="720" y1="340" x2="720" y2="520"/>
+          <line x1="810" y1="340" x2="810" y2="520"/>
+        </g>
+        <rect x="0" y="340" width="900" height="3" fill="#4a6080" opacity=".35"/>
+        <!-- Rug -->
+        <ellipse cx="430" cy="445" rx="130" ry="35" fill="#7a3828" opacity=".28"/>
+        <ellipse cx="430" cy="445" rx="100" ry="27" fill="#c8a030" opacity=".16"/>
+        <ellipse cx="430" cy="445" rx="70" ry="18" fill="#7a3828" opacity=".14"/>
+
+        <!-- === PENDANT LAMPS === -->
+        <rect x="158" y="20" width="5" height="48" rx="2.5" fill="#2a2040"/>
+        <path d="M145,68 L174,68 L167,95 L152,95 Z" fill="#1a3050" stroke="#2aadad" stroke-width="1.2"/>
+        <ellipse cx="159" cy="95" rx="14" ry="5" fill="#fffde0" opacity=".5" filter="url(#fblur2)"/>
+        <ellipse cx="159" cy="108" rx="50" ry="20" fill="url(#gLamp)" filter="url(#fblur8)"/>
+
+        <rect x="648" y="20" width="5" height="48" rx="2.5" fill="#2a2040"/>
+        <path d="M635,68 L664,68 L657,95 L642,95 Z" fill="#1a3050" stroke="#2aadad" stroke-width="1.2"/>
+        <ellipse cx="649" cy="95" rx="14" ry="5" fill="#fffde0" opacity=".5" filter="url(#fblur2)"/>
+        <ellipse cx="649" cy="108" rx="50" ry="20" fill="url(#gLamp)" filter="url(#fblur8)"/>
+
+        <!-- === WALL SHELF (LEFT) with items === -->
+        <rect x="26" y="96" width="126" height="8" rx="2" fill="url(#gCounter)" stroke="#c8a86a" stroke-width="1"/>
+        <line x1="26" y1="96" x2="26" y2="155" stroke="#c8a86a" stroke-width="1.5" opacity=".35"/>
+        <line x1="152" y1="96" x2="152" y2="155" stroke="#c8a86a" stroke-width="1.5" opacity=".35"/>
+        <!-- Jars -->
+        <rect x="32" y="72" width="17" height="24" rx="3" fill="#b84030" stroke="#d06050" stroke-width="1"/>
+        <rect x="34" y="68" width="13" height="6" rx="2" fill="#8a2820"/>
+        <rect x="53" y="74" width="15" height="22" rx="3" fill="#2aadad" stroke="#40c0c0" stroke-width="1"/>
+        <rect x="56" y="70" width="9" height="5" rx="1.5" fill="#1a8080"/>
+        <rect x="72" y="70" width="18" height="26" rx="2" fill="#d4a030" stroke="#f0c040" stroke-width="1"/>
+        <rect x="74" y="66" width="14" height="5" rx="1.5" fill="#a07020"/>
+        <rect x="94" y="74" width="14" height="22" rx="2" fill="#7a4a8a" stroke="#a060b0" stroke-width="1"/>
+        <rect x="112" y="72" width="14" height="24" rx="2" fill="#2aadad" stroke="#3ababa" stroke-width="1"/>
+        <!-- Cutting board + tools -->
+        <rect x="22" y="108" width="22" height="42" rx="4" fill="#8a5a30" stroke="#c8a86a" stroke-width="1.2"/>
+        <circle cx="33" cy="110" r="3" fill="#0d1020"/>
+        <line x1="50" y1="108" x2="50" y2="152" stroke="#c8a86a" stroke-width="2.5"/>
+        <ellipse cx="50" cy="107" rx="5" ry="3" fill="#c8a86a"/>
+        <line x1="60" y1="108" x2="60" y2="152" stroke="#b09060" stroke-width="2"/>
+        <rect x="57" y="104" width="8" height="5" rx="2" fill="#c06040"/>
+
+        <!-- === UPPER CABINETS === -->
+        <!-- Left double cab -->
+        <rect x="160" y="78" width="120" height="122" rx="5" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.5"/>
+        <line x1="220" y1="78" x2="220" y2="200" stroke="#20a8a8" stroke-width=".8" opacity=".5"/>
+        <rect x="175" y="136" width="32" height="5" rx="2.5" fill="#c8a86a"/>
+        <rect x="222" y="136" width="32" height="5" rx="2.5" fill="#c8a86a"/>
+        <!-- shine -->
+        <rect x="162" y="80" width="115" height="8" rx="2" fill="#ffffff" opacity=".06"/>
+
+        <!-- Right small cab -->
+        <rect x="288" y="78" width="68" height="122" rx="5" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.5"/>
+        <rect x="302" y="136" width="28" height="5" rx="2.5" fill="#c8a86a"/>
+        <rect x="290" y="80" width="63" height="8" rx="2" fill="#ffffff" opacity=".05"/>
+
+        <!-- === MICROWAVE === -->
+        <rect x="364" y="82" width="158" height="118" rx="6" fill="#141820" stroke="#20a8a8" stroke-width="2"/>
+        <rect x="370" y="88" width="106" height="106" rx="4" fill="#080c16" stroke="#c8a86a" stroke-width="1"/>
+        <!-- door shine -->
+        <rect x="372" y="90" width="40" height="8" rx="2" fill="#ffffff" opacity=".04"/>
+        <rect x="482" y="88" width="34" height="106" rx="0" fill="#1a2030" stroke="#20a8a8" stroke-width=".5"/>
+        <circle cx="499" cy="118" r="9" fill="#0d1420" stroke="#20a8a8" stroke-width="1.5"/>
+        <circle cx="499" cy="138" r="7" fill="#0d1420" stroke="#20a8a8" stroke-width="1.5"/>
+        <circle cx="499" cy="155" r="5" fill="#0d1420" stroke="#20a8a8" stroke-width="1"/>
+        <rect x="378" y="100" width="95" height="26" rx="3" fill="#020810" stroke="#1e2d42" stroke-width="1"/>
+        <text x="425" y="118" text-anchor="middle" font-size="13" fill="#00c4ef" font-family="monospace" id="mwclk">12:00</text>
+
+        <!-- === WINDOW === -->
+        <rect x="542" y="14" width="162" height="92" rx="5" fill="url(#gWindow)" stroke="#20a8a8" stroke-width="2"/>
+        <line x1="623" y1="14" x2="623" y2="106" stroke="#20a8a8" stroke-width="2"/>
+        <line x1="542" y1="60" x2="704" y2="60" stroke="#20a8a8" stroke-width="2"/>
+        <rect x="545" y="16" width="76" height="43" rx="2" fill="#4a90d0" opacity=".1"/>
+        <rect x="626" y="16" width="76" height="43" rx="2" fill="#4a90d0" opacity=".08"/>
+        <!-- glass sheen -->
+        <rect x="545" y="16" width="24" height="43" rx="2" fill="#ffffff" opacity=".05"/>
+        <rect x="626" y="16" width="22" height="43" rx="2" fill="#ffffff" opacity=".04"/>
+        <!-- frame -->
+        <rect x="536" y="8" width="174" height="100" rx="6" fill="none" stroke="#c8a86a" stroke-width="2"/>
+        <!-- window sill -->
+        <rect x="536" y="106" width="174" height="8" rx="2" fill="url(#gCounter)" stroke="#c8a86a" stroke-width="1"/>
+        <!-- Window plant (small pot on sill) -->
+        <rect x="674" y="96" width="16" height="14" rx="2" fill="#7a4a20" stroke="#c8a86a" stroke-width=".8"/>
+        <ellipse cx="682" cy="96" rx="10" ry="5" fill="#1a3a18"/>
+        <circle cx="677" cy="88" rx="6" ry="6" fill="#1a5025"/>
+        <circle cx="685" cy="84" rx="7" ry="7" fill="#1a4020"/>
+        <circle cx="681" cy="80" rx="5" ry="5" fill="#2a6030"/>
+
+        <!-- === HOOD DUCT === -->
+        <rect x="410" y="20" width="46" height="146" rx="0" fill="#0a2020" stroke="#20a8a8" stroke-width="1" opacity=".75"/>
+        <rect x="412" y="20" width="8" height="146" fill="#20a8a8" opacity=".07"/>
+
+        <!-- === RANGE HOOD === -->
+        <rect x="362" y="163" width="150" height="100" rx="5" fill="#0d3a3a" stroke="#20a8a8" stroke-width="1.8"/>
+        <rect x="372" y="173" width="130" height="10" rx="3" fill="#20a8a8" opacity=".3"/>
+        <rect x="372" y="187" width="130" height="72" rx="2" fill="#0a2828"/>
+        <circle cx="378" cy="177" r="4" fill="#2ecc40" opacity=".8"/>
+        <circle cx="390" cy="177" r="4" fill="#f4c842" opacity=".7"/>
+        <line x1="372" y1="196" x2="502" y2="196" stroke="#20a8a8" stroke-width=".7" opacity=".45"/>
+        <line x1="372" y1="208" x2="502" y2="208" stroke="#20a8a8" stroke-width=".7" opacity=".45"/>
+        <line x1="372" y1="220" x2="502" y2="220" stroke="#20a8a8" stroke-width=".7" opacity=".45"/>
+        <line x1="372" y1="232" x2="502" y2="232" stroke="#20a8a8" stroke-width=".7" opacity=".45"/>
+
+        <!-- === STOVE === -->
+        <rect x="358" y="264" width="164" height="20" rx="3" fill="#111825" stroke="#20a8a8" stroke-width="1.5"/>
+        <!-- Burners -->
+        <ellipse cx="400" cy="275" rx="24" ry="9" fill="#0a1020" stroke="#3a4060" stroke-width="1.5"/>
+        <ellipse cx="400" cy="275" rx="14" ry="5.5" fill="#070c18" stroke="#c8a86a" stroke-width="1"/>
+        <ellipse cx="400" cy="275" rx="5" ry="2.5" fill="#020408"/>
+        <ellipse cx="470" cy="275" rx="24" ry="9" fill="#0a1020" stroke="#3a4060" stroke-width="1.5"/>
+        <ellipse cx="470" cy="275" rx="14" ry="5.5" fill="#070c18" stroke="#c8a86a" stroke-width="1"/>
+        <ellipse cx="470" cy="275" rx="5" ry="2.5" fill="#020408"/>
+        <!-- Knobs -->
+        <circle cx="364" cy="280" r="5" fill="#20a8a8" stroke="#40d0d0" stroke-width="1.2"/>
+        <circle cx="378" cy="280" r="5" fill="#20a8a8" stroke="#40d0d0" stroke-width="1.2"/>
+        <circle cx="392" cy="280" r="5" fill="#20a8a8" stroke="#40d0d0" stroke-width="1.2"/>
+        <circle cx="406" cy="280" r="5" fill="#20a8a8" stroke="#40d0d0" stroke-width="1.2"/>
+        <!-- Stove Flames -->
+        <g id="flame1" opacity="0">
+          <ellipse cx="400" cy="267" rx="8" ry="14" fill="#ff6b35" opacity=".88"/>
+          <ellipse cx="400" cy="264" rx="5" ry="8" fill="#f4c842" opacity=".92"/>
+          <ellipse cx="400" cy="262" rx="3" ry="4.5" fill="#fffde0" opacity=".75"/>
+        </g>
+        <g id="flame2" opacity="0">
+          <ellipse cx="470" cy="267" rx="8" ry="14" fill="#ff6b35" opacity=".88"/>
+          <ellipse cx="470" cy="264" rx="5" ry="8" fill="#f4c842" opacity=".92"/>
+          <ellipse cx="470" cy="262" rx="3" ry="4.5" fill="#fffde0" opacity=".75"/>
+        </g>
+
+        <!-- === COUNTER TOP === -->
+        <rect x="22" y="278" width="744" height="14" rx="3" fill="url(#gCounter)" stroke="#c8a86a" stroke-width="1.2"/>
+        <rect x="24" y="279" width="740" height="5" rx="2" fill="#ffffff" opacity=".06"/>
+
+        <!-- === COUNTER BASE === -->
+        <rect x="22" y="288" width="744" height="60" rx="3" fill="url(#gCabDark)" stroke="#20a8a8" stroke-width="1.5"/>
+
+        <!-- Lower cabinet doors -->
+        <rect x="28" y="294" width="90" height="52" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <rect x="64" y="318" width="18" height="5" rx="2.5" fill="#c8a86a"/>
+        <rect x="126" y="294" width="110" height="52" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <rect x="176" y="318" width="18" height="5" rx="2.5" fill="#c8a86a"/>
+        <rect x="244" y="294" width="110" height="52" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <rect x="294" y="318" width="18" height="5" rx="2.5" fill="#c8a86a"/>
+        <!-- Stove drawers -->
+        <rect x="358" y="294" width="164" height="26" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <rect x="432" y="305" width="26" height="5" rx="2.5" fill="#c8a86a"/>
+        <rect x="358" y="322" width="164" height="26" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <!-- Sink cab -->
+        <rect x="530" y="294" width="118" height="52" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <rect x="580" y="318" width="18" height="5" rx="2.5" fill="#c8a86a"/>
+        <!-- End cab -->
+        <rect x="656" y="294" width="64" height="52" rx="3" fill="url(#gCab)" stroke="#20a8a8" stroke-width="1.1"/>
+        <rect x="678" y="318" width="18" height="5" rx="2.5" fill="#c8a86a"/>
+
+        <!-- === SINK === -->
+        <rect x="528" y="260" width="122" height="24" rx="3" fill="#0a1818" stroke="#20a8a8" stroke-width="1.5"/>
+        <rect x="532" y="264" width="52" height="17" rx="2" fill="#050a12" stroke="#c8a86a" stroke-width="1.2"/>
+        <rect x="590" y="264" width="56" height="17" rx="2" fill="#050a12" stroke="#c8a86a" stroke-width="1.2"/>
+        <rect x="533" y="265" width="22" height="4" rx="1" fill="#ffffff" opacity=".07"/>
+        <rect x="591" y="265" width="20" height="4" rx="1" fill="#ffffff" opacity=".05"/>
+        <!-- Faucet -->
+        <rect x="616" y="242" width="5" height="22" rx="2.5" fill="#c8a86a"/>
+        <rect x="603" y="242" width="28" height="4" rx="2" fill="#c8a86a"/>
+        <circle cx="603" cy="244" r="4" fill="#c8a86a" opacity=".8"/>
+        <circle cx="631" cy="244" r="4" fill="#c8a86a" opacity=".8"/>
+        <!-- Water drip animated -->
+        <circle id="wdrip" cx="618" cy="263" r="2.5" fill="#4d8fff" opacity="0"/>
+
+        <!-- === FRIDGE === -->
+        <rect x="774" y="52" width="96" height="294" rx="7" fill="url(#gFridge)" stroke="#20a8a8" stroke-width="2"/>
+        <rect x="780" y="58" width="83" height="130" rx="4" fill="#0a1418" stroke="#c8a86a" stroke-width="1"/>
+        <rect x="780" y="196" width="83" height="142" rx="4" fill="#0a1418" stroke="#c8a86a" stroke-width="1"/>
+        <rect x="782" y="110" width="5" height="32" rx="2.5" fill="#c8a86a"/>
+        <rect x="782" y="248" width="5" height="32" rx="2.5" fill="#c8a86a"/>
+        <rect x="786" y="62" width="70" height="13" rx="3" fill="#020810" stroke="#1e2d42" stroke-width="1"/>
+        <text x="821" y="73" text-anchor="middle" font-size="8" fill="#2ecc40" font-family="monospace" id="ftemp">4°C</text>
+        <rect x="774" y="52" width="8" height="294" rx="3" fill="#40d0d0" opacity=".15"/>
+        <line x1="774" y1="192" x2="870" y2="192" stroke="#20a8a8" stroke-width="1.5"/>
+        <!-- Fridge shine -->
+        <rect x="776" y="54" width="35" height="290" rx="3" fill="#ffffff" opacity=".04"/>
+
+        <!-- === DECORATIVE FRAME === -->
+        <rect x="728" y="30" width="52" height="44" rx="3" fill="#1a1020" stroke="#c8a86a" stroke-width="2"/>
+        <rect x="731" y="33" width="46" height="38" rx="2" fill="#2a1535" stroke="#c8a86a" stroke-width="1"/>
+        <circle cx="754" cy="52" r="10" fill="#c06040" opacity=".7"/>
+        <circle cx="766" cy="46" r="7" fill="#2aadad" opacity=".6"/>
+        <circle cx="744" cy="46" r="5" fill="#f4c842" opacity=".5"/>
+
+        <!-- === PLANT: BALCAO (anchored correctly) === -->
+        <!-- pot sits on counter top (y=278 is countertop surface) -->
+        <!-- Pot bottom at y=278, height ~24 => top of pot at y=254 -->
+        <rect x="240" y="254" width="30" height="24" rx="4" fill="#8a5a30" stroke="#c8a86a" stroke-width="1.2"/>
+        <!-- pot lip -->
+        <rect x="237" y="252" width="36" height="6" rx="3" fill="#7a4a20" stroke="#c8a86a" stroke-width="1"/>
+        <!-- soil -->
+        <ellipse cx="255" cy="255" rx="14" ry="4" fill="#2a1808" opacity=".9"/>
+        <!-- stem -->
+        <line x1="255" y1="254" x2="255" y2="228" stroke="#1a5820" stroke-width="2.5"/>
+        <line x1="255" y1="244" x2="244" y2="232" stroke="#1a5020" stroke-width="1.5"/>
+        <line x1="255" y1="238" x2="266" y2="227" stroke="#1a5020" stroke-width="1.5"/>
+        <!-- leaves — all anchored to stem points -->
+        <ellipse cx="236" cy="228" rx="15" ry="8" fill="#1a7030" transform="rotate(-35 236 228)"/>
+        <ellipse cx="274" cy="225" rx="15" ry="8" fill="#1a6028" transform="rotate(30 274 225)"/>
+        <ellipse cx="245" cy="220" rx="13" ry="7" fill="#2a8040" transform="rotate(-20 245 220)"/>
+        <ellipse cx="265" cy="218" rx="12" ry="7" fill="#1a7030" transform="rotate(25 265 218)"/>
+        <ellipse cx="255" cy="215" rx="10" ry="7" fill="#2a9050"/>
+        <!-- flower -->
+        <circle cx="255" cy="216" r="5" fill="#f4c842" opacity=".75"/>
+        <circle cx="255" cy="216" r="3" fill="#e87040" opacity=".85"/>
+        <!-- Humidity sensor probe in soil -->
+        <rect x="262" y="244" width="4" height="14" rx="1.5" fill="#00c4ef" opacity=".9" stroke="#008aaa" stroke-width=".8"/>
+        <rect x="262" y="244" width="4" height="5" rx="1" fill="#006880"/>
+        <!-- wire from probe up to sensor badge -->
+        <line x1="264" y1="244" x2="264" y2="230" stroke="#00c4ef" stroke-width=".8" stroke-dasharray="2,2" opacity=".5"/>
+
+        <!-- === PLANT: FLOOR CORNER (anchored to floor) === -->
+        <!-- Pot base on floor at y=340 -->
+        <rect x="864" y="318" width="26" height="24" rx="4" fill="#7a4a20" stroke="#c8a86a" stroke-width="1"/>
+        <rect x="861" y="316" width="32" height="7" rx="3" fill="#6a3a18" stroke="#c8a86a" stroke-width="1"/>
+        <ellipse cx="877" cy="318" rx="12" ry="4" fill="#2a1808" opacity=".9"/>
+        <!-- stems -->
+        <line x1="877" y1="317" x2="870" y2="280" stroke="#1a4818" stroke-width="2"/>
+        <line x1="877" y1="317" x2="882" y2="275" stroke="#1a4818" stroke-width="2"/>
+        <line x1="877" y1="317" x2="877" y2="270" stroke="#1a5020" stroke-width="2.5"/>
+        <!-- leaves sitting above pot -->
+        <circle cx="870" cy="280" r="14" fill="#1a5025" opacity=".9"/>
+        <circle cx="884" cy="274" r="16" fill="#1a4820" opacity=".9"/>
+        <circle cx="877" cy="268" r="13" fill="#226030" opacity=".9"/>
+        <circle cx="866" cy="268" r="11" fill="#1a5828" opacity=".8"/>
+        <circle cx="885" cy="284" r="10" fill="#1a4020" opacity=".8"/>
+        <ellipse cx="877" cy="258" rx="8" ry="12" fill="#2a7040" opacity=".7"/>
+
+        <!-- === WATER OVERFLOW GROUP === -->
+        <g id="overflow-g" opacity="0">
+          <rect x="528" y="276" width="122" height="6" fill="#4d8fff" opacity=".55"/>
+          <ellipse cx="535" cy="296" rx="6" ry="22" fill="#4d8fff" opacity=".35"/>
+          <ellipse cx="648" cy="296" rx="6" ry="22" fill="#4d8fff" opacity=".35"/>
+          <ellipse cx="589" cy="284" rx="54" ry="6" fill="#4d8fff" opacity=".25"/>
+          <!-- puddle on floor -->
+          <ellipse cx="589" cy="346" rx="70" ry="12" fill="#4d8fff" opacity=".18"/>
+          <ellipse cx="589" cy="346" rx="45" ry="7" fill="#4d8fff" opacity=".25"/>
+        </g>
+
+        <!-- === SENSOR NODES === -->
+        <!-- TEMP: above stove area -->
+        <g class="snode" data-sensor="temp" style="cursor:pointer" transform="translate(435,243)">
+          <circle r="21" fill="#ff6b3520" stroke="#ff6b35" stroke-width="2"/>
+          <circle r="21" fill="none" stroke="#ff6b35" stroke-width="1" opacity=".3">
+            <animate attributeName="r" values="21;34;21" dur="2.2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".3;0;.3" dur="2.2s" repeatCount="indefinite"/>
+          </circle>
+          <text x="0" y="7" text-anchor="middle" font-size="16">🌡️</text>
+          <rect x="-24" y="25" width="48" height="16" rx="4" fill="#0d1117cc"/>
+          <text x="0" y="37" text-anchor="middle" font-size="9" fill="#ff6b35" font-family="monospace" id="stempv">25°C</text>
+        </g>
+
+        <!-- HUM: above plant on counter -->
+        <g class="snode" data-sensor="hum" style="cursor:pointer" transform="translate(255,200)">
+          <circle r="20" fill="#00c4ef20" stroke="#00c4ef" stroke-width="2"/>
+          <circle r="20" fill="none" stroke="#00c4ef" stroke-width="1" opacity=".3">
+            <animate attributeName="r" values="20;32;20" dur="2.4s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".3;0;.3" dur="2.4s" repeatCount="indefinite"/>
+          </circle>
+          <text x="0" y="6" text-anchor="middle" font-size="15">💧</text>
+          <rect x="-20" y="24" width="40" height="15" rx="3" fill="#0d1117cc"/>
+          <text x="0" y="35" text-anchor="middle" font-size="9" fill="#00c4ef" font-family="monospace" id="shumv">60%</text>
+        </g>
+
+        <!-- PIR: top center ceiling -->
+        <g class="snode" data-sensor="pir" style="cursor:pointer" transform="translate(200,42)">
+          <circle r="20" fill="#f4c84220" stroke="#f4c842" stroke-width="2"/>
+          <circle r="20" fill="none" stroke="#f4c842" stroke-width="1" opacity=".3">
+            <animate attributeName="r" values="20;34;20" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".3;0;.3" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <text x="0" y="6" text-anchor="middle" font-size="16">👁️</text>
+          <rect x="-22" y="24" width="44" height="15" rx="3" fill="#0d1117cc"/>
+          <text x="0" y="35" text-anchor="middle" font-size="9" fill="#f4c842" font-family="monospace" id="spirv">Livre</text>
+        </g>
+
+        <!-- GAS: on wall far left, well separated -->
+        <g class="snode" data-sensor="gas" style="cursor:pointer" transform="translate(70,200)">
+          <circle r="20" fill="#ff2d5520" stroke="#ff2d55" stroke-width="2"/>
+          <circle r="20" fill="none" stroke="#ff2d55" stroke-width="1" opacity=".3">
+            <animate attributeName="r" values="20;32;20" dur="2.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".3;0;.3" dur="2.6s" repeatCount="indefinite"/>
+          </circle>
+          <text x="0" y="6" text-anchor="middle" font-size="16">💨</text>
+          <rect x="-24" y="24" width="48" height="15" rx="3" fill="#0d1117cc"/>
+          <text x="0" y="35" text-anchor="middle" font-size="9" fill="#ff2d55" font-family="monospace" id="sgasv">Normal</text>
+        </g>
+
+        <!-- WATER: above sink -->
+        <g class="snode" data-sensor="water" style="cursor:pointer" transform="translate(589,226)">
+          <circle r="20" fill="#4d8fff20" stroke="#4d8fff" stroke-width="2"/>
+          <circle r="20" fill="none" stroke="#4d8fff" stroke-width="1" opacity=".3">
+            <animate attributeName="r" values="20;32;20" dur="2.8s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".3;0;.3" dur="2.8s" repeatCount="indefinite"/>
+          </circle>
+          <text x="0" y="6" text-anchor="middle" font-size="16">🪣</text>
+          <rect x="-20" y="24" width="40" height="15" rx="3" fill="#0d1117cc"/>
+          <text x="0" y="35" text-anchor="middle" font-size="9" fill="#4d8fff" font-family="monospace" id="swaterv">75%</text>
+        </g>
+
+        <!-- Wire hints -->
+        <line x1="200" y1="62" x2="200" y2="94" stroke="#f4c84240" stroke-width=".8" stroke-dasharray="3,3"/>
+        <line x1="70" y1="220" x2="70" y2="278" stroke="#ff2d5540" stroke-width=".8" stroke-dasharray="3,3"/>
+        <line x1="435" y1="264" x2="435" y2="278" stroke="#ff6b3540" stroke-width=".8" stroke-dasharray="3,3"/>
+        <line x1="589" y1="246" x2="589" y2="260" stroke="#4d8fff40" stroke-width=".8" stroke-dasharray="3,3"/>
+        <line x1="255" y1="220" x2="255" y2="242" stroke="#00c4ef40" stroke-width=".8" stroke-dasharray="3,3"/>
+
+        <!-- PIR scan rings -->
+        <g id="pirsc" opacity="0" pointer-events="none">
+          <circle cx="200" cy="42" r="44" fill="none" stroke="#f4c842" stroke-width="1.2" opacity=".4"/>
+          <circle cx="200" cy="42" r="90" fill="none" stroke="#f4c842" stroke-width=".8" opacity=".2"/>
+          <circle cx="200" cy="42" r="148" fill="none" stroke="#f4c842" stroke-width=".5" opacity=".1"/>
+        </g>
+
+        <!-- HC-SR04 sensor badge on sink wall -->
+        <rect x="578" y="240" width="22" height="12" rx="3" fill="#4d8fff" stroke="#2060d0" stroke-width="1"/>
+        <circle cx="583" cy="246" r="3" fill="#1a3080" stroke="#4d8fff" stroke-width=".8"/>
+        <circle cx="591" cy="246" r="3" fill="#1a3080" stroke="#4d8fff" stroke-width=".8"/>
+
+        <!-- === WALKING PERSON (hidden by default) === -->
+        <g id="person-g" opacity="0" pointer-events="none">
+          <ellipse id="pshadow" cx="0" cy="14" rx="18" ry="6" fill="#000" opacity=".22"/>
+          <rect id="llegl" x="-10" y="0" width="9" height="24" rx="3" fill="#2a5090"/>
+          <rect id="rlegl" x="1" y="0" width="9" height="24" rx="3" fill="#2a5090"/>
+          <rect id="lshoe" x="-14" y="21" width="14" height="7" rx="3" fill="#1a1a2a"/>
+          <rect id="rshoe" x="1" y="21" width="14" height="7" rx="3" fill="#1a1a2a"/>
+          <rect x="-12" y="-26" width="24" height="28" rx="5" fill="#d07040"/>
+          <rect id="larml" x="-20" y="-24" width="9" height="20" rx="3" fill="#d07040"/>
+          <rect id="rarml" x="11" y="-24" width="9" height="20" rx="3" fill="#d07040"/>
+          <circle cx="0" cy="-36" r="13" fill="#f0c090"/>
+          <ellipse cx="0" cy="-47" rx="13" ry="7" fill="#3a2010"/>
+          <circle cx="-4" cy="-37" r="2" fill="#2a1a0a"/>
+          <circle cx="4" cy="-37" r="2" fill="#2a1a0a"/>
+          <path d="M-4,-31 Q0,-28 4,-31" stroke="#5a3010" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- === CLEANER PERSON (hidden by default) === -->
+        <g id="cleaner-g" opacity="0" pointer-events="none">
+          <ellipse cx="0" cy="14" rx="22" ry="6" fill="#000" opacity=".18"/>
+          <rect x="18" y="-44" width="5" height="62" rx="2" fill="#c8a86a"/>
+          <g id="mophead">
+            <rect x="8" y="17" width="32" height="5" rx="2" fill="#ddd" opacity=".8"/>
+            <rect x="10" y="22" width="4" height="11" rx="1" fill="#ccc" opacity=".7"/>
+            <rect x="16" y="22" width="4" height="13" rx="1" fill="#bbb" opacity=".7"/>
+            <rect x="22" y="22" width="4" height="10" rx="1" fill="#ddd" opacity=".7"/>
+            <rect x="28" y="22" width="4" height="12" rx="1" fill="#ccc" opacity=".7"/>
+          </g>
+          <rect x="-10" y="0" width="9" height="24" rx="3" fill="#2a4070"/>
+          <rect x="1" y="0" width="9" height="24" rx="3" fill="#2a4070"/>
+          <rect x="-14" y="21" width="14" height="7" rx="3" fill="#1a1a2a"/>
+          <rect x="1" y="21" width="14" height="7" rx="3" fill="#1a1a2a"/>
+          <rect x="-12" y="-26" width="24" height="28" rx="5" fill="#5090d0"/>
+          <rect x="-9" y="-20" width="18" height="22" rx="3" fill="#ffffff" opacity=".35"/>
+          <rect x="-20" y="-24" width="9" height="18" rx="3" fill="#5090d0"/>
+          <rect x="11" y="-24" width="9" height="18" rx="3" fill="#5090d0"/>
+          <circle cx="0" cy="-36" r="12" fill="#f0c090"/>
+          <ellipse cx="0" cy="-46" rx="11" ry="5.5" fill="#6a4020"/>
+          <circle cx="0" cy="-49" r="5.5" fill="#7a5030"/>
+          <circle cx="-3" cy="-37" r="2" fill="#2a1a0a"/>
+          <circle cx="3" cy="-37" r="2" fill="#2a1a0a"/>
+          <!-- water trail -->
+          <g opacity=".4">
+            <ellipse cx="35" cy="10" rx="22" ry="4" fill="#4d8fff" opacity=".3"/>
+            <ellipse cx="65" cy="10" rx="16" ry="3" fill="#4d8fff" opacity=".2"/>
+          </g>
+        </g>
+
+      </svg>
+
+      <div class="spop" id="spop">
+        <div class="spname" id="spname">—</div>
+        <div id="spval">—</div>
+        <div id="spstatus">—</div>
+        <div style="font-size:.58rem;color:var(--text-dim);margin-top:5px">→ Ver na aba Sensores</div>
+      </div>
+    </div>
+
+    <div class="kleg">
+      <span style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-right:4px">SENSORES:</span>
+      <div class="legi"><div class="legd" style="background:var(--ao)"></div>🌡️ LM35 Temp</div>
+      <div class="legi"><div class="legd" style="background:var(--ac)"></div>💧 HL-69 Umidade Planta</div>
+      <div class="legi"><div class="legd" style="background:var(--ay)"></div>👁️ PIR Movimento</div>
+      <div class="legi"><div class="legd" style="background:var(--ar)"></div>💨 MQ-135 Gás</div>
+      <div class="legi"><div class="legd" style="background:var(--ab)"></div>🪣 HC-SR04 Água Pia</div>
+    </div>
+    <div class="bstrip">
+      <div class="bsc"><div class="bslbl">Temperatura</div><div class="bsv" id="bstemp" style="color:var(--ao)">25.0°C</div></div>
+      <div class="bsc"><div class="bslbl">Umidade Planta</div><div class="bsv" id="bshum" style="color:var(--ac)">60%</div></div>
+      <div class="bsc"><div class="bslbl">Movimento</div><div class="bsv" id="bspir" style="color:var(--ay)">Livre</div></div>
+      <div class="bsc"><div class="bslbl">Gás (ppm)</div><div class="bsv" id="bsgas" style="color:var(--ar)">120</div></div>
+      <div class="bsc"><div class="bslbl">Água Pia</div><div class="bsv" id="bswater" style="color:var(--ab)">75%</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TAB SENSORES -->
+<div class="tc" id="tab-sensores">
+<div class="ps">
+  <div class="scard temp" id="card-temp">
+    <div class="sch"><div class="sct"><div class="sci">🌡️</div><div><div class="scn">TEMPERATURA</div><div class="scm">LM35 · 10mV/°C · 0–80°C</div></div></div><div class="scs ok" id="status-temp">NORMAL</div></div>
+    <div class="svr"><div class="svv" id="val-temp" style="color:var(--ao)">25.0</div><div class="svu">°C</div></div>
+    <div class="gw"><div class="gl"><span>0°C</span><span>Zona: <span id="zone-temp">Conforto</span></span><span>80°C</span></div><div class="gt"><div class="gf" id="gauge-temp" style="width:31%;background:var(--ao)"></div></div></div>
+    <svg class="mc" viewBox="0 0 200 36"><polyline id="line-temp" fill="none" stroke="var(--ao)" stroke-width="1.5" points=""/></svg>
+    <div class="cta">
+      <span style="font-size:.68rem;color:var(--text-dim)">Simular:</span>
+      <input type="range" id="sl-temp" min="0" max="80" value="25" step="0.5">
+      <span id="slv-temp" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--ao);min-width:44px">25.0°C</span>
+      <button class="cb" id="btn-auto-temp" onclick="simulateTemp()">▶ AUTO</button>
+    </div>
+  </div>
+
+  <div class="scard hum" id="card-hum">
+    <div class="sch"><div class="sct"><div class="sci">🌿</div><div><div class="scn">UMIDADE DA PLANTA</div><div class="scm">HL-69 · Resistivo · 0–100% · Vaso</div></div></div><div class="scs ok" id="status-hum">IDEAL</div></div>
+    <div class="svr"><div class="svv" id="val-hum" style="color:var(--ac)">60</div><div class="svu">%</div></div>
+    <div class="gw"><div class="gl"><span>Seco</span><span id="zone-hum">Adequado</span><span>Saturado</span></div><div class="gt"><div class="gf" id="gauge-hum" style="width:60%;background:var(--ac)"></div></div></div>
+    <svg class="mc" viewBox="0 0 200 36"><polyline id="line-hum" fill="none" stroke="var(--ac)" stroke-width="1.5" points=""/></svg>
+    <div class="cta">
+      <span style="font-size:.68rem;color:var(--text-dim)">Nível:</span>
+      <input type="range" id="sl-hum" min="0" max="100" value="60" step="1">
+      <span id="slv-hum" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--ac);min-width:36px">60%</span>
+      <button class="cb" onclick="irrigate()">💦 Irrigar</button>
+    </div>
+  </div>
+
+  <div class="scard pir" id="card-pir">
+    <div class="sch"><div class="sct"><div class="sci">👁️</div><div><div class="scn">MOVIMENTO (PIR)</div><div class="scm">HC-SR501 · 120° · 3–7m</div></div></div><div class="scs ok" id="status-pir">LIVRE</div></div>
+    <div style="display:flex;align-items:center;gap:16px;margin:8px 0">
+      <div class="pirring" id="pirring"></div>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.55rem;font-weight:700;color:var(--ay)" id="val-pir">NENHUM</div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace">Última: <span id="pirlast">--:--:--</span></div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-top:2px">Detecções: <span id="pircount" style="color:var(--ay)">0</span></div>
+      </div>
+    </div>
+    <div class="cta">
+      <button class="cb" onclick="triggerMotion()">🚶 Simular</button>
+      <button class="cb" onclick="resetPIR()">↺ Reset</button>
+      <button class="cb" id="btn-auto-pir" onclick="toggleAutoPIR()">▶ AUTO</button>
+    </div>
+  </div>
+
+  <div class="scard gas" id="card-gas">
+    <div class="sch"><div class="sct"><div class="sci">💨</div><div><div class="scn">QUALIDADE DO AR / GÁS</div><div class="scm">MQ-135 · NH₃ · CO₂ · Fumaça</div></div></div><div class="scs ok" id="status-gas">SEGURO</div></div>
+    <div class="svr"><div class="svv" id="val-gas" style="color:var(--ag)">120</div><div class="svu">ppm</div><span class="flame" id="gflame" style="font-size:1.4rem;margin-left:12px">🔥</span></div>
+    <div class="gw"><div class="gl"><span>0</span><span id="zone-gas">Bom</span><span>1000</span></div><div class="gt"><div class="gf" id="gauge-gas" style="width:12%;background:var(--ag)"></div></div></div>
+    <svg class="mc" viewBox="0 0 200 36"><polyline id="line-gas" fill="none" stroke="var(--ar)" stroke-width="1.5" points=""/></svg>
+    <div class="cta">
+      <span style="font-size:.68rem;color:var(--text-dim)">Concentração:</span>
+      <input type="range" id="sl-gas" min="0" max="1000" value="120" step="5">
+      <span id="slv-gas" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--ar);min-width:50px">120ppm</span>
+      <button class="cb dng" onclick="gasAlert()">⚠️ Vazamento</button>
+    </div>
+  </div>
+
+  <div class="scard water" id="card-water">
+    <div class="sch"><div class="sct"><div class="sci">🚿</div><div><div class="scn">NÍVEL DA PIA</div><div class="scm">HC-SR04 Ultrassônico · Pia da Cozinha</div></div></div><div class="scs ok" id="status-water">NORMAL</div></div>
+    <div style="display:flex;align-items:center;gap:22px;margin:5px 0">
+      <div class="wtank"><div class="tbody"><div class="tfill" id="tfill" style="height:75%"><div class="tlbl" id="tlbl">75%</div></div></div></div>
+      <div>
+        <div class="svr" style="margin:0 0 3px"><div class="svv" id="val-water" style="color:var(--ab);font-size:2.2rem">75</div><div class="svu">%</div></div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace">Volume: <span id="wvol" style="color:var(--ab)">15.0 L</span></div>
+        <div style="font-size:.6rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-top:2px">Capacidade: <span>20 L</span></div>
+      </div>
+    </div>
+    <div class="gw" style="margin-top:8px"><div class="gl"><span>Vazio</span><span id="zone-water">Normal</span><span>Transbordando</span></div><div class="gt"><div class="gf" id="gauge-water" style="width:75%;background:var(--ab)"></div></div></div>
+    <div class="cta">
+      <span style="font-size:.68rem;color:var(--text-dim)">Nível:</span>
+      <input type="range" id="sl-water" min="0" max="100" value="75" step="1">
+      <span id="slv-water" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--ab);min-width:36px">75%</span>
+      <button class="cb" onclick="drainWater()">🚿 Esvaziar</button>
+      <button class="cb" onclick="fillWater()">🚰 Encher</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TAB LOG -->
+<div class="tc" id="tab-log">
+<div class="pl">
+  <div class="lstats">
+    <div class="sbox"><div class="snum" id="stat-total" style="color:var(--ac)">0</div><div class="slbl">Total</div></div>
+    <div class="sbox"><div class="snum" id="stat-err" style="color:var(--ar)">0</div><div class="slbl">Alertas</div></div>
+    <div class="sbox"><div class="snum" id="stat-warn" style="color:var(--ay)">0</div><div class="slbl">Avisos</div></div>
+    <div class="sbox"><div class="snum" id="stat-pir2" style="color:var(--ay)">0</div><div class="slbl">PIR</div></div>
+  </div>
+  <div class="lwrap">
+    <div class="lhdr"><span>📋 Registro de Eventos</span><button class="cb" onclick="clearLog()" style="font-size:.68rem">🗑 Limpar</button></div>
+    <div class="llist" id="llist"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// Theme
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);$('tbd').classList.toggle('active',t==='dark');$('tbl').classList.toggle('active',t==='light');}
+
+// Tabs
+function switchTab(n){
+  document.querySelectorAll('.tc').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tbtn2').forEach(e=>e.classList.remove('active'));
+  $('tab-'+n).classList.add('active');$('tabt-'+n).classList.add('active');
+  if(n==='log')$('lbadge').classList.remove('show');
+}
+
+// Clock
+function updateClock(){const t=new Date();$('clock').textContent=t.toLocaleTimeString('pt-BR');$('mwclk').textContent=t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+setInterval(updateClock,1000);updateClock();
+
+// Alerts
+const alerts={};
+function showAlert(k,msg,type){alerts[k]={msg,type};renderBanner();renderOv();}
+function clearAlert(k){delete alerts[k];renderBanner();renderOv();}
+function dismissBanner(){$('abanner').classList.remove('show');}
+function renderBanner(){
+  const ks=Object.keys(alerts);
+  const b=$('abanner'),msgs=$('abmsgs'),h=$('ahdr');
+  if(!ks.length){b.classList.remove('show');h.style.display='none';return;}
+  b.classList.add('show');$('abt').textContent='• '+new Date().toLocaleTimeString('pt-BR');
+  msgs.innerHTML='';ks.forEach(k=>{const a=alerts[k];const c=document.createElement('div');c.className='abchip';c.innerHTML='<span class="dot"></span>'+a.msg;msgs.appendChild(c);});
+  h.style.display='flex';$('ahtxt').textContent='⚠ '+ks.length+' ALERTA'+(ks.length>1?'S':'');
+}
+function renderOv(){
+  const ov=$('kov');ov.innerHTML='';const ks=Object.keys(alerts);
+  if(!ks.length){ov.innerHTML='<div class="kchip kok">✔ Todos os sensores normais</div>';return;}
+  ks.forEach(k=>{const a=alerts[k];const c=document.createElement('div');c.className='kchip '+(a.type==='err'?'kal':'kw');c.textContent=(a.type==='err'?'🔴 ':'🟡 ')+a.msg;ov.appendChild(c);});
+}
+
+// Toast
+function showToast(title,msg,type='info'){
+  const c=$('toastc'),t=document.createElement('div');
+  t.className='toast '+type;
+  t.innerHTML='<span class="ticon">'+(type==='err'?'🔴':type==='warn'?'🟡':'🔵')+'</span><div><div class="ttit">'+title+'</div><div class="tmsg">'+msg+'</div></div>';
+  c.appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),420);},4200);
+}
+
+// Log
+let lTot=0,lErr=0,lWarn=0;
+function addLog(msg,type='info'){
+  const t=new Date().toLocaleTimeString('pt-BR');lTot++;if(type==='err')lErr++;if(type==='warn')lWarn++;
+  $('stat-total').textContent=lTot;$('stat-err').textContent=lErr;$('stat-warn').textContent=lWarn;
+  const l=$('llist'),e=document.createElement('div');e.className='li '+type;
+  e.innerHTML='<span class="lt">['+t+']</span><span>'+msg+'</span>';l.prepend(e);
+  while(l.children.length>100)l.removeChild(l.lastChild);
+  if(!$('tab-log').classList.contains('active')&&(type==='err'||type==='warn')){$('lbadge').classList.add('show');$('lbadge').textContent=lErr+lWarn;}
+}
+function clearLog(){$('llist').innerHTML='';lTot=lErr=lWarn=0;['stat-total','stat-err','stat-warn'].forEach(id=>$(id).textContent='0');}
+
+// Charts
+const hist={temp:[],hum:[],gas:[],water:[]};
+const MPTS=30;
+function pushH(k,v){hist[k].push(v);if(hist[k].length>MPTS)hist[k].shift();redrawChart(k);}
+function redrawChart(k){
+  const d=hist[k];if(d.length<2)return;
+  const mn=Math.min(...d),mx=Math.max(...d),rng=mx-mn||1;
+  const pts=d.map((v,i)=>{const x=2+(i/(MPTS-1))*196;const y=32-2-((v-mn)/rng)*28;return x.toFixed(1)+','+y.toFixed(1);}).join(' ');
+  const el=$('line-'+k);if(el)el.setAttribute('points',pts);
+}
+
+// State
+const S={temp:25,hum:60,pir:false,pirCount:0,gas:120,water:75};
+
+// Sensor popup
+document.querySelectorAll('.snode').forEach(g=>{
+  g.addEventListener('click',function(e){
+    const s=this.dataset.sensor,pop=$('spop'),area=$('karea').getBoundingClientRect();
+    pop.style.left=(e.clientX-area.left+14)+'px';pop.style.top=(e.clientY-area.top+14)+'px';
+    const i=getSI(s);$('spname').textContent=i.name;$('spname').style.color=i.color;$('spval').textContent=i.val;$('spstatus').textContent=i.status;
+    pop.classList.add('show');setTimeout(()=>pop.classList.remove('show'),3200);switchTab('sensores');
+  });
+});
+function getSI(s){return{
+  temp:{name:'🌡️ LM35',color:'var(--ao)',val:S.temp.toFixed(1)+'°C',status:'Zona: '+$('zone-temp').textContent},
+  hum:{name:'💧 HL-69 Planta',color:'var(--ac)',val:S.hum+'%',status:$('zone-hum').textContent},
+  pir:{name:'👁️ PIR',color:'var(--ay)',val:S.pir?'DETECTADO':'Livre',status:'Det: '+S.pirCount},
+  gas:{name:'💨 MQ-135',color:'var(--ar)',val:Math.round(S.gas)+' ppm',status:$('zone-gas').textContent},
+  water:{name:'🪣 HC-SR04 Pia',color:'var(--ab)',val:S.water+'%',status:(S.water*0.2).toFixed(1)+' L'},
+}[s]||{name:s,color:'white',val:'',status:''};}
+
+// ======= FIRE CANVAS (full scene overlay) =======
+let fireActive=false,fireRAF=null;
+const fireCanvas=$('fire-canvas');
+const fireOverlay=$('fire-overlay');
+let fCtx=null,fW=0,fH=0,fParticles=[];
+
+function initFireCanvas(){
+  const area=$('karea');
+  fW=area.offsetWidth; fH=area.offsetHeight;
+  fireCanvas.width=fW; fireCanvas.height=fH;
+  fCtx=fireCanvas.getContext('2d');
+}
+
+function createFireParticle(intensity){
+  // Spawn from floor and countertop level
+  const spawnY=fH*(0.5+Math.random()*0.5);
+  return {
+    x:Math.random()*fW,
+    y:spawnY,
+    vx:(Math.random()-0.5)*2.5,
+    vy:-(3+Math.random()*intensity*0.06),
+    size:8+Math.random()*intensity*0.08,
+    life:1.0,
+    decay:0.005+Math.random()*0.012,
+    type:Math.random()<0.45?'smoke':'fire',
+    hue:Math.random()<0.5?20:40,
+  };
+}
+
+function drawFireFrame(intensity){
+  fCtx.clearRect(0,0,fW,fH);
+  // Ambient orange-red tint over whole scene
+  const alpha=Math.min(0.55,(intensity-250)/1200);
+  if(alpha>0){
+    fCtx.fillStyle='rgba(200,60,0,'+alpha.toFixed(2)+')';
+    fCtx.fillRect(0,0,fW,fH);
+  }
+  // Spawn new particles
+  const spawnRate=Math.floor(2+intensity*0.04);
+  for(let i=0;i<spawnRate;i++) fParticles.push(createFireParticle(intensity));
+  // Max particles
+  if(fParticles.length>600) fParticles.splice(0,fParticles.length-600);
+
+  fParticles.forEach(p=>{
+    p.x+=p.vx+(Math.random()-0.5)*1.5;
+    p.y+=p.vy;
+    p.vx*=0.98;
+    p.life-=p.decay;
+    if(p.type==='fire'){
+      const r=Math.min(255,200+p.life*55)|0;
+      const g=Math.min(255,(p.life*p.life*180))|0;
+      fCtx.globalAlpha=p.life*0.75;
+      const grad=fCtx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size);
+      grad.addColorStop(0,'rgba(255,240,100,0.9)');
+      grad.addColorStop(0.4,'rgba('+r+','+g+',0,0.7)');
+      grad.addColorStop(1,'rgba(180,40,0,0)');
+      fCtx.fillStyle=grad;
+      fCtx.beginPath();fCtx.arc(p.x,p.y,p.size,0,Math.PI*2);fCtx.fill();
+    } else {
+      // Smoke rises higher
+      p.size+=0.3;
+      const sm=Math.min(90,30+p.life*40)|0;
+      fCtx.globalAlpha=p.life*0.35;
+      const sg=fCtx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size);
+      sg.addColorStop(0,'rgba('+sm+','+sm+','+sm+',0.6)');
+      sg.addColorStop(1,'rgba(20,20,20,0)');
+      fCtx.fillStyle=sg;
+      fCtx.beginPath();fCtx.arc(p.x,p.y,p.size,0,Math.PI*2);fCtx.fill();
+    }
+    fCtx.globalAlpha=1;
+  });
+  fParticles=fParticles.filter(p=>p.life>0&&p.y>-200);
+}
+
+function startFire(){
+  if(fireActive)return;fireActive=true;
+  initFireCanvas();
+  fireOverlay.classList.add('active');
+  fParticles=[];
+  function loop(){
+    if(!fireActive)return;
+    drawFireFrame(S.gas);
+    fireRAF=requestAnimationFrame(loop);
+  }
+  loop();
+}
+function stopFire(){
+  fireActive=false;
+  fireOverlay.classList.remove('active');
+  if(fireRAF)cancelAnimationFrame(fireRAF);
+  fParticles=[];
+  if(fCtx)fCtx.clearRect(0,0,fW,fH);
+}
+
+// Resize fire canvas with container
+const resizeObs=new ResizeObserver(()=>{if(fireActive)initFireCanvas();});
+resizeObs.observe($('karea'));
+
+// ======= WALKING PERSON =======
+let personIv=null,personOn=false;
+function showPerson(){
+  if(personOn)return;personOn=true;
+  const g=$('person-g');g.setAttribute('opacity','1');
+  let x=-60,frame=0;
+  const baseY=390;
+  g.setAttribute('transform','translate('+x+','+baseY+')');
+  personIv=setInterval(()=>{
+    x+=3.5;frame++;
+    const sw=Math.sin(frame*0.35)*20;
+    $('llegl').setAttribute('transform','rotate('+sw+' -5 0)');
+    $('rlegl').setAttribute('transform','rotate('+(-sw)+' 5 0)');
+    $('lshoe').setAttribute('transform','rotate('+sw+' -5 0)');
+    $('rshoe').setAttribute('transform','rotate('+(-sw)+' 5 0)');
+    $('larml').setAttribute('transform','rotate('+(-sw*0.6)+' -15 -24)');
+    $('rarml').setAttribute('transform','rotate('+(sw*0.6)+' 15 -24)');
+    const bob=Math.abs(Math.sin(frame*0.35))*3;
+    g.setAttribute('transform','translate('+x+','+(baseY-bob)+')');
+    if(x>940){clearInterval(personIv);personIv=null;personOn=false;g.setAttribute('opacity','0');}
+  },22);
+}
+
+// ======= CLEANER =======
+let cleanerIv=null,cleanerOn=false;
+function showCleaner(){
+  if(cleanerOn)return;cleanerOn=true;
+  const g=$('cleaner-g');g.setAttribute('opacity','1');
+  let x=950,frame=0;
+  const baseY=390;
+  g.setAttribute('transform','translate('+x+','+baseY+') scaleX(-1)');
+  cleanerIv=setInterval(()=>{
+    x-=2;frame++;
+    const sw=Math.sin(frame*0.25)*14;
+    $('mophead').setAttribute('transform','rotate('+sw+' 18 17)');
+    g.setAttribute('transform','translate('+x+','+baseY+') scaleX(-1)');
+    if(x<250){
+      clearInterval(cleanerIv);
+      setTimeout(()=>{
+        let x2=250;
+        const bk=setInterval(()=>{x2+=2.5;g.setAttribute('transform','translate('+x2+','+baseY+')');if(x2>960){clearInterval(bk);cleanerOn=false;g.setAttribute('opacity','0');}},22);
+      },1500);
+    }
+  },22);
+}
+
+// ======= WATER DRIP =======
+let wdripAngle=0;
+setInterval(()=>{
+  wdripAngle+=0.1;
+  const drip=$('wdrip');if(!drip)return;
+  const p=(Math.sin(wdripAngle)+1)/2;
+  const cy=263+p*26;drip.setAttribute('cy',cy.toFixed(1));drip.setAttribute('opacity',(p*0.65).toFixed(2));drip.setAttribute('r',(1.5+p).toFixed(1));
+},30);
+
+// ======= TEMPERATURE =======
+const slTemp=$('sl-temp');let tempAutoIv=null;
+slTemp.addEventListener('input',()=>{S.temp=parseFloat(slTemp.value);$('slv-temp').textContent=S.temp.toFixed(1)+'°C';updateTemp();});
+function updateTemp(){
+  const v=S.temp;
+  $('val-temp').textContent=v.toFixed(1);$('bstemp').textContent=v.toFixed(1)+'°C';$('stempv').textContent=v.toFixed(1)+'°C';
+  $('gauge-temp').style.width=(v/80*100)+'%';
+  let c,st,z;
+  if(v<15){c='#00c4ef';st='FRIO';z='Frio';}else if(v<28){c='var(--ao)';st='NORMAL';z='Conforto';}else if(v<45){c='#ff9944';st='QUENTE';z='Quente';}else{c='var(--ar)';st='CRÍTICO';z='Perigo';}
+  $('val-temp').style.color=c;$('gauge-temp').style.background=c;$('status-temp').textContent=st;$('zone-temp').textContent=z;
+  $('status-temp').className=v>=45?'scs danger':v>=35?'scs warn':'scs ok';
+  $('card-temp').classList.toggle('alrt',v>=45);
+  $('flame1').style.opacity=v>45?'1':v>30?'0.5':'0';
+  $('flame2').style.opacity=v>45?'1':v>30?'0.5':'0';
+  $('ftemp').textContent=v>30?Math.max(1,Math.round(v/14))+'°C':'4°C';
+  pushH('temp',v);
+  if(v>=45){if(!alerts['temp'])showToast('Temperatura Crítica',v.toFixed(1)+'°C','err');showAlert('temp','TEMP '+v.toFixed(1)+'°C — PERIGO','err');addLog('🔴 Temp crítica: '+v.toFixed(1)+'°C','err');}
+  else if(v>=35){if(!alerts['tw'])showToast('Temperatura Elevada',v.toFixed(1)+'°C','warn');showAlert('tw','TEMP elevada: '+v.toFixed(1)+'°C','warn');clearAlert('temp');addLog('🟡 Temp elevada: '+v.toFixed(1)+'°C','warn');}
+  else{clearAlert('temp');clearAlert('tw');}
+}
+function simulateTemp(){
+  if(tempAutoIv){clearInterval(tempAutoIv);tempAutoIv=null;$('btn-auto-temp').textContent='▶ AUTO';$('btn-auto-temp').classList.remove('act');return;}
+  $('btn-auto-temp').textContent='■ STOP';$('btn-auto-temp').classList.add('act');
+  let t=0;tempAutoIv=setInterval(()=>{t+=0.05;S.temp=Math.max(0,Math.min(80,22+Math.sin(t)*15+Math.random()*2));slTemp.value=S.temp;$('slv-temp').textContent=S.temp.toFixed(1)+'°C';updateTemp();},600);
+}
+
+// ======= HUMIDITY =======
+const slHum=$('sl-hum');
+slHum.addEventListener('input',()=>{S.hum=parseInt(slHum.value);$('slv-hum').textContent=S.hum+'%';updateHum();});
+function updateHum(){
+  const v=S.hum;
+  $('val-hum').textContent=v;$('bshum').textContent=v+'%';$('shumv').textContent=v+'%';$('gauge-hum').style.width=v+'%';
+  let c,st,z;
+  if(v<20){c='var(--ar)';st='SECA';z='Planta Seca!';}else if(v<40){c='var(--ay)';st='BAIXO';z='Precisando Água';}else if(v<70){c='var(--ac)';st='IDEAL';z='Adequado';}else if(v<85){c='var(--ab)';st='ALTO';z='Encharcada';}else{c='var(--ar)';st='SATURADA';z='Saturada';}
+  $('val-hum').style.color=c;$('gauge-hum').style.background=c;$('status-hum').textContent=st;$('zone-hum').textContent=z;
+  $('status-hum').className=v>=85||v<20?'scs danger':v<40?'scs warn':'scs ok';
+  pushH('hum',v);
+  if(v<20){showAlert('hum','Planta seca: '+v+'%','err');addLog('🔴 Planta seca: '+v+'%','err');}
+  else if(v>=85){showAlert('hum','Planta saturada: '+v+'%','warn');addLog('🟡 Umidade alta: '+v+'%','warn');}
+  else clearAlert('hum');
+}
+function irrigate(){
+  addLog('💦 Irrigando planta...','info');showToast('Irrigação','Aumentando umidade...','info');
+  let t=0;const iv=setInterval(()=>{S.hum=Math.min(100,S.hum+2);slHum.value=S.hum;$('slv-hum').textContent=S.hum+'%';updateHum();if(++t>=10||S.hum>=90){clearInterval(iv);addLog('✅ Irrigação concluída','info');}},300);
+}
+
+// ======= PIR =======
+let pirAutoR=null,pirAutoIv=null;
+function triggerMotion(){
+  S.pir=true;S.pirCount++;$('stat-pir2').textContent=S.pirCount;
+  const now=new Date().toLocaleTimeString('pt-BR');
+  $('val-pir').textContent='DETECTADO!';$('val-pir').style.color='var(--ar)';
+  $('pirring').classList.add('active');$('pirlast').textContent=now;$('pircount').textContent=S.pirCount;
+  $('status-pir').textContent='ATIVADO';$('status-pir').className='scs danger';
+  $('bspir').textContent='DETECTADO';$('spirv').textContent='Detec.';
+  $('pirsc').style.opacity='1';$('card-pir').classList.add('alrt');
+  showAlert('pir','MOVIMENTO detectado','err');showToast('Movimento','PIR às '+now,'err');addLog('🚨 Movimento detectado!','err');
+  showPerson();
+  if(pirAutoR)clearTimeout(pirAutoR);pirAutoR=setTimeout(resetPIR,6000);
+}
+function resetPIR(){
+  S.pir=false;$('val-pir').textContent='NENHUM';$('val-pir').style.color='var(--ay)';
+  $('pirring').classList.remove('active');$('status-pir').textContent='LIVRE';$('status-pir').className='scs ok';
+  $('bspir').textContent='Livre';$('spirv').textContent='Livre';
+  $('pirsc').style.opacity='0';$('card-pir').classList.remove('alrt');clearAlert('pir');
+}
+function toggleAutoPIR(){
+  if(pirAutoIv){clearInterval(pirAutoIv);pirAutoIv=null;$('btn-auto-pir').textContent='▶ AUTO';$('btn-auto-pir').classList.remove('act');return;}
+  $('btn-auto-pir').textContent='■ STOP';$('btn-auto-pir').classList.add('act');
+  pirAutoIv=setInterval(()=>{if(Math.random()<0.3)triggerMotion();},3000);
+}
+
+// ======= GAS =======
+const slGas=$('sl-gas');
+slGas.addEventListener('input',()=>{S.gas=parseInt(slGas.value);$('slv-gas').textContent=S.gas+'ppm';updateGas();});
+function updateGas(){
+  const v=S.gas;
+  $('val-gas').textContent=Math.round(v);$('bsgas').textContent=Math.round(v);$('sgasv').textContent=v>400?'ALERTA':v>200?'Elev.':'Normal';
+  $('gauge-gas').style.width=(v/1000*100)+'%';
+  let c,st,z;
+  if(v<150){c='var(--ag)';st='SEGURO';z='Bom';}else if(v<300){c='var(--ay)';st='MÉDIO';z='Moderado';}else if(v<600){c='var(--ao)';st='ALTO';z='Perigoso';}else{c='var(--ar)';st='CRÍTICO';z='RISCO DE VIDA';}
+  $('val-gas').style.color=c;$('gauge-gas').style.background=c;$('status-gas').textContent=st;$('zone-gas').textContent=z;
+  $('status-gas').className=v>=600?'scs danger':v>=300?'scs warn':'scs ok';
+  $('card-gas').classList.toggle('alrt',v>=600);
+  $('gflame').classList.toggle('dng',v>=400);
+  pushH('gas',v);
+  // Fire & smoke overlay
+  if(v>=400){
+    startFire();
+    if(!alerts['gas'])showToast('INCÊNDIO — GÁS CRÍTICO','Fumaça e fogo detectados!','err');
+    showAlert('gas','GÁS '+Math.round(v)+'ppm — INCÊNDIO!','err');
+    addLog('🔴 GÁS CRÍTICO: '+Math.round(v)+'ppm — INCÊNDIO!','err');
+  } else {
+    stopFire();clearAlert('gas');
+  }
+}
+function gasAlert(){
+  addLog('⚠️ Simulando vazamento...','warn');showToast('Simulando Vazamento','Gás subindo rapidamente...','warn');
+  let t=0;const iv=setInterval(()=>{S.gas=Math.min(1000,S.gas+35+Math.random()*15);slGas.value=S.gas;$('slv-gas').textContent=Math.round(S.gas)+'ppm';updateGas();if(++t>=22||S.gas>=920)clearInterval(iv);},200);
+}
+
+// ======= WATER =======
+const slWater=$('sl-water');let prevHigh=false;
+slWater.addEventListener('input',()=>{S.water=parseInt(slWater.value);$('slv-water').textContent=S.water+'%';updateWater();});
+function updateWater(){
+  const v=S.water;
+  $('val-water').textContent=v;$('bswater').textContent=v+'%';$('swaterv').textContent=v+'%';
+  $('tfill').style.height=v+'%';$('tlbl').textContent=v+'%';$('wvol').textContent=(v*0.2).toFixed(1)+' L';$('gauge-water').style.width=v+'%';
+  let c,st,z;
+  if(v<=10){c='var(--ar)';st='VAZIO';z='Crítico';}else if(v<=30){c='var(--ao)';st='BAIXO';z='Baixo';}else if(v<90){c='var(--ab)';st='NORMAL';z='Normal';}else if(v<100){c='var(--ay)';st='ALTO';z='Quase transbordando';}else{c='var(--ar)';st='TRANSBORDANDO';z='Transbordando!';}
+  $('val-water').style.color=c;$('tfill').style.background='linear-gradient(180deg,'+c+'88,'+c+'cc)';
+  $('status-water').textContent=st;$('zone-water').textContent=z;
+  $('status-water').className=v<=10||v>=100?'scs danger':v<=30||v>=90?'scs warn':'scs ok';
+  $('gauge-water').style.background=c;$('card-water').classList.toggle('alrt',v<=10||v>=100);
+  pushH('water',v);
+  if(v>=100){
+    $('overflow-g').setAttribute('opacity','1');
+    if(!alerts['wo'])showToast('PIA TRANSBORDANDO!','Água derramando!','err');
+    showAlert('wo','PIA TRANSBORDANDO!','err');addLog('🔴 Pia transbordando!','err');prevHigh=true;
+  } else {
+    $('overflow-g').setAttribute('opacity','0');
+    if(prevHigh&&v<95){clearAlert('wo');if(!cleanerOn){addLog('🧹 Faxineira ativada','info');showToast('Limpeza','Faxineira enviada','info');showCleaner();}prevHigh=false;}
+    else if(!prevHigh)clearAlert('wo');
+    if(v<=10){if(!alerts['water'])showToast('Pia vazia','Nível crítico','err');showAlert('water','PIA: '+v+'%','err');addLog('🔴 Nível crítico: '+v+'%','err');}
+    else if(v<=25){showAlert('water','Água baixa: '+v+'%','warn');addLog('🟡 Baixo: '+v+'%','warn');}
+    else clearAlert('water');
+  }
+}
+function drainWater(){addLog('🚿 Esvaziando...','info');let t=0;const iv=setInterval(()=>{S.water=Math.max(0,S.water-3);slWater.value=S.water;$('slv-water').textContent=S.water+'%';updateWater();if(++t>=35||S.water<=0){clearInterval(iv);addLog('✅ Pia esvaziada','info');}},150);}
+function fillWater(){addLog('🚰 Enchendo...','info');let t=0;const iv=setInterval(()=>{S.water=Math.min(100,S.water+2);slWater.value=S.water;$('slv-water').textContent=S.water+'%';updateWater();if(++t>=55||S.water>=100){clearInterval(iv);addLog('✅ Pia cheia','info');}},120);}
+
+// Realtime noise
+setInterval(()=>{
+  if(!slTemp.matches(':active')&&!tempAutoIv){S.temp=Math.max(0,Math.min(80,S.temp+(Math.random()-.5)*.25));slTemp.value=S.temp;$('slv-temp').textContent=S.temp.toFixed(1)+'°C';updateTemp();}
+  if(!slHum.matches(':active'))pushH('hum',S.hum);
+  if(!slGas.matches(':active')){S.gas=Math.max(0,Math.min(1000,S.gas+(Math.random()-.5)*3));pushH('gas',S.gas);}
+  pushH('water',S.water);
+},1200);
+
+// Init
+addLog('🟢 Smart Kitchen v5 iniciado','info');
+addLog('📡 5 sensores online','info');
+addLog('🌿 HL-69 no vaso da planta','info');
+addLog('🚿 HC-SR04 na pia da cozinha','info');
+updateTemp();updateHum();updateGas();updateWater();renderOv();
+for(let i=0;i<22;i++){pushH('temp',22+Math.random()*6);pushH('hum',55+Math.random()*15);pushH('gas',100+Math.random()*60);pushH('water',70+Math.random()*10);}
+</script>
+</body>
+</html>
